@@ -1,84 +1,181 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+
 <head>
-	<link rel="icon" href="res/me3.png" type="image/x-icon"> 
-  <link rel="shortcut icon" href="res/me3.png" type="image/x-icon">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>废柴洛夫的小破站</title>
-<link href="res/blogPostStyle.css" rel="stylesheet" type="text/css">
-<!--The following script tag downloads a font from the Adobe Edge Web Fonts server for use within the web page. We recommend that you do not modify it.--><script>var __adobewebfontsappname__="dreamweaver"</script><script src="http://use.edgefonts.net/montserrat:n4:default;source-sans-pro:n2:default.js" type="text/javascript"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秋月站长的不知名存档</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --aki-blue: #7888a5;
+      --flarum-bg: #f4f7f6;
+      --glass: rgba(255, 255, 255, 0.75);
+    }
+
+    body {
+      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      background-attachment: fixed;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+      color: #4a5568;
+    }
+
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .side-nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .side-nav-item:hover {
+      background: rgba(120, 136, 165, 0.15);
+      color: var(--aki-blue);
+      transform: translateX(4px);
+    }
+
+    .prose code {
+      color: var(--aki-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tag-legacy {
+      background: #edf2f7;
+      color: #718096;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+  </style>
 </head>
 
-<body>
-<div id="mainwrapper">
-  <header> 
-    <!--**************************************************************************
-    Header starts here. It contains Logo and 3 navigation links. 
-    ****************************************************************************-->
-    <div id="logo">
-      <!-- <img src="res/logoImage.png" alt="">
-      <!-- Company Logo text -->
-      废柴洛夫的小破站</div>
-    <nav> <a href="https://shimakaze.akiacg.com" title="点我了解岛风">岛风bot</a> <a href="https://www.Skydom.org" title="mc服务器，快来陪我玩！">Skydom云霞服务器</a><a href="https://baidu.akiacg.com" title="阿巴阿巴">你不会百度吗？</a> </nav>
-  </header>
-  <div id="content">
-    <div class="notOnDesktop"> 
-      <!-- This search box is displayed only in mobile and tablet laouts and not in desktop layouts -->
-      <input type="text" placeholder="Search">
+<body class="antialiased min-h-screen">
+
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <div class="container mx-auto max-w-6xl px-4 h-14 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <div class="flex items-baseline gap-2">
+          <a href="/" class="font-bold text-lg tracking-tight text-slate-800">
+            HAISAIROVA<span class="text-blue-500">.</span>
+          </a>
+          <span class="text-[10px] text-gray-400 font-normal tracking-tight opacity-70">
+            至少我当年叫这个。
+          </span>
+        </div>
+        <div class="hidden md:flex gap-2">
+          <span class="tag-legacy uppercase tracking-widest">Est. 2021</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 text-sm font-medium">
+        <a href="#" class="hover:text-blue-500 transition">Index</a>
+        <a href="https://forum.akiacg.com"
+          class="bg-slate-800 text-white px-4 py-1.5 rounded-full hover:bg-slate-700 transition shadow-lg shadow-slate-200">Forum</a>
+      </div>
     </div>
-    <section id="mainContent"> 
-      <!--************************************************************************
-    Main Blog content starts here
-    ****************************************************************************-->
-      <h1>
-        <!-- Blog title -->
-      废柴洛夫</h1>
-      <h3>
-        <!-- Tagline -->
-      啊？？？</h3>
-      <div id="bannerImage"><img src="res/me.png" alt=""/></div>
-      <p>这是个似乎很有用但完全没有用的网站！&nbsp; </p>
-      <p>有问题dd我</p>
-      <p>网易云:废柴洛夫official<br>QQ:3486682396<br>wx:Haisairova_Official &nbsp;</p>
-<aside id="authorInfo"> 
-        <!-- The author information is contained here -->
-        <h2>啥东西嘛...烦的要命...&nbsp;</h2>
-        <p>我不响丸辣！！！！</p>
-      </aside>
-    </section>
-    <section id="sidebar"> 
-      <!--************************************************************************
-    Sidebar starts here. It contains a searchbox, sample ad image and 6 links
-    ****************************************************************************-->
-      <input type="text" placeholder="你今天想要搜索什么东西：">
-      <div id="adimage"><img src="res/me2.1.jpg" title="嗯？" alt="kuma！"/></div>
-      <nav>
-        <ul>
-          <li><a href="https://shimakaze.haisairova.com" title="点我了解岛风">岛风bot</a></li>
-          <li><a href="https://www.Skydom.org" title="mc服务器，快来陪我玩！">Skydom云霞服务器</a></li>
-          <li><a href="https://baidu.haisairova.com" title="阿巴阿巴">你不会百度吗？</a></li>
-          <li><a href="/music.html" title="耶！我就知道你会看我的！">点我听歌（没写好）&nbsp;</a></li>
-          <li><a href="https://feedgoldfish.top" title="享受电子人生">赛博鱼缸</a></li>
-          <li><a href="https://www.奈绪的小破站.com" title="当心资本家！">【友情链接】奈绪的小破站</a></li>
-        </ul>
+  </header>
+
+  <main class="container mx-auto max-w-6xl mt-8 px-4 flex flex-col md:flex-row gap-8 pb-20">
+
+    <aside class="w-full md:w-64 flex flex-col gap-4">
+      <div class="glass-card p-6 flex flex-col items-center">
+        <div class="relative group">
+          <img src="https://github.com/Haisairova-Official.png"
+            class="w-24 h-24 rounded-3xl shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
+          <div class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 border-2 border-white rounded-full"></div>
+        </div>
+        <h2 class="mt-4 font-bold text-xl text-slate-800">Haisairova</h2>
+        <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed italic">
+          人就像树，枝叶越向往自由的天空，根须越深入阴暗的地底。
+        </p>
+      </div>
+
+      <nav class="glass-card p-2 space-y-1">
+        <a href="https://shimakaze.akiacg.com" class="side-nav-item"><i class="fa-solid fa-robot w-6 opacity-50"></i> 岛风
+          Bot（已停止运营）</a>
+        <a href="https://www.Skydom.org" class="side-nav-item"><i class="fa-solid fa-server w-6 opacity-50"></i> Skydom
+          云霞服务器（已停止运营）</a>
+        <a href="https://baidu.akiacg.com" class="side-nav-item"><i
+            class="fa-solid fa-magnifying-glass w-6 opacity-50"></i> 你不会百度吗？</a>
+        <a href="https://feedgoldfish.top" class="side-nav-item"><i class="fa-solid fa-fish w-6 opacity-50"></i>
+          赛博鱼缸</a>
+        <a href="https://forum.AkiACG.com" class="side-nav-item"><i class="fa-solid fa-comments w-6 opacity-50"></i>
+          秋月论坛</a>
+        <div class="border-t border-gray-100 my-2"></div>
+        <a href="https://www.奈绪的小破站.com" class="side-nav-item text-xs text-gray-400 hover:text-gray-600 italic">友情链接:
+          奈绪的小破站（也寄了，同期只剩下我这个域名还在active了）</a>
       </nav>
+    </aside>
+
+    <section class="flex-1">
+      <div class="glass-card p-8 md:p-12 mb-6">
+        <div class="flex items-center gap-3 mb-8 text-xs font-mono text-gray-400">
+          <span class="px-2 py-1 bg-blue-50 text-blue-500 rounded font-bold">#LEGACY_ARCHIVE</span>
+          <span>LAST_POSTED_ON: 2024-01-18</span>
+        </div>
+
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-8 tracking-tight">
+          秋月站长的不知名存档
+        </h1>
+
+        <div class="prose prose-slate max-w-none leading-relaxed text-slate-600">
+          <p class="text-lg text-slate-500 italic mb-8 border-l-4 border-slate-200 pl-4">
+            “这曾经是一个似乎很有用，但完全没有用的网站。”
+          </p>
+
+          <h3 class="text-slate-800 font-bold mb-4">■ 2021年留下的内容：</h3>
+          <div class="bg-white/50 p-4 rounded-lg font-mono text-sm border border-gray-100 mb-8">
+            <p>> Status: <span class="text-red-400">我不响丸辣！！！！</span></p>
+            <p>> Quote: "啥东西嘛... 烦得要命..."</p>
+          </div>
+
+          <h3 class="text-slate-800 font-bold mb-4">■ 联系我</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div class="p-4 bg-white/40 rounded-lg border border-white/60">
+              <span class="block text-xs text-gray-400">网易云音乐</span>
+              <span class="font-medium text-slate-700">废柴洛夫official→我不是秋月</span>
+            </div>
+            <div class="p-4 bg-white/40 rounded-lg border border-white/60">
+              <span class="block text-xs text-gray-400">QQ / 微信</span>
+              <span class="font-medium text-slate-700 text-sm">QQ: 3486682396 / WX: Haisairova_Official</span>
+            </div>
+            <div class="p-4 bg-white/40 rounded-lg border border-white/60">
+              <span class="block text-xs text-gray-400">Github</span>
+              <span class="font-medium text-slate-700 text-sm">Haisairova-Official</span>
+            </div>
+          </div>
+
+          <h3 class="text-slate-800 font-bold mb-4 text-center">--- 后记 ---</h3>
+          <div class="flex justify-center gap-8 py-8 opacity-40 hover:opacity-100 transition duration-500">
+            <div class="text-center">
+              <h4 class="text-xs font-bold uppercase tracking-widest mb-2">写啥啊</h4>
+              <p class="text-[10px] break-all max-w-[150px]">ashjfdhajksdggkqhgdjkahfkldshfa</p>
+            </div>
+            <div class="text-center">
+              <h4 class="text-xs font-bold uppercase tracking-widest mb-2">甭写了</h4>
+              <p class="text-[10px] max-w-[150px]">阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-gray-100 flex items-center justify-between">
+          <div class="text-xs text-gray-300 font-mono tracking-tighter">
+            RECONSTRUCTED BY Haisairova &copy; 2026
+          </div>
+        </div>
+      </div>
     </section>
-    <footer> 
-      <!--************************************************************************
-    Footer starts here
-    ****************************************************************************-->
-      <article>
-        <h3>写啥啊</h3>
-        <p>ashjfdhajksdggkqhgdjkahfkldshfa</p>
-      </article>
-      <article>
-        <h3>甭写了&nbsp;</h3>
-        <p>阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴</p>
-      </article>
-    </footer>
-  </div>
-  <div id="footerbar"><!-- Small footerbar at the bottom --></div>
-</div>
+  </main>
+
 </body>
+
 </html>
