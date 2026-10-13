@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <base href="/drive/">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#dae5eb">
+  <meta name="description" content="驾驶灰色威姿或白色 C-HR，逛逛秋月站长的存档街区。WASD 驾驶，F 阅读路边的旧故事。">
+  <title>秋月存档街区 · DRIVE / 2021</title>
+  <link rel="icon" href="./assets/avatar.png">
+  <link rel="preload" as="image" href="./assets/loading-yaris.webp">
+  <style>
+/* Critical loading UI is in HTML so it appears before the game modules. */
+body.booting > :not(#world):not(noscript){visibility:hidden!important}body.booting #world canvas{pointer-events:none}
+#loading{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#dae5eb;color:#243c46;text-align:center;padding:24px;font:15px/1.5 system-ui,sans-serif;opacity:1;transition:opacity .18s ease}
+#loading[hidden],#loading [hidden]{display:none!important}#loading.loading-complete{opacity:0;pointer-events:none}
+.loading-car{width:256px;height:256px;overflow:hidden;transform-origin:50% 71%;animation:loading-bounce .6s linear infinite;will-change:transform}.loading-row{display:block;width:256px;height:2048px;animation:loading-turn-row 3.84s steps(8,end) infinite;will-change:transform}.loading-sprite{display:block;width:3072px;height:2048px;max-width:none;animation:loading-turn .48s steps(12,end) infinite;will-change:transform}
+#loading-stage{margin:0;font-weight:650;letter-spacing:.04em}#loading small{color:#596f79;margin-top:7px}#loading-error{max-width:38em;overflow-wrap:anywhere}#loading button,#loading a{margin-top:12px;padding:10px 20px;border:1px solid #97adb5;border-radius:12px;color:#243c46;background:#f2f7f8;text-decoration:none}#loading.loading-failed .loading-car,#loading.loading-failed .loading-row,#loading.loading-failed .loading-sprite{animation-play-state:paused}
+@keyframes loading-turn-row{to{transform:translateY(-2048px)}}
+@keyframes loading-turn{to{transform:translateX(-3072px)}}
+@keyframes loading-bounce{0%,22%,78%,100%{transform:scale(1) translateY(0)}29%{transform:scale(1.0275,.925)}36%{transform:scale(1.0902,.754)}48%{transform:scale(1.11,.70)}59%{transform:scale(1.1012,.724)}64%{transform:scale(1.044,.886) translateY(-1px)}68%{transform:scale(1,1.12) translateY(-6px)}72%{transform:scale(1,1.036) translateY(-2px)}}
+[data-bounce-motion=off] .loading-car,[data-bounce-motion=off] .loading-row,[data-bounce-motion=off] .loading-sprite{animation:none;will-change:auto}[data-bounce-motion=off] .loading-row{transform:translateY(-256px)}[data-bounce-motion=off] .loading-sprite{transform:translateX(-1024px)}@media(prefers-reduced-motion:reduce){#loading{transition:none}}
+.loading-motion-control{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:12px}.loading-motion-control select{font:inherit;background:#f2f7f8;border:1px solid #97adb5;border-radius:8px;padding:7px 9px;color:#243c46}
+@media(max-width:390px){.loading-car{margin:-20px 0}}
+</style>
+  <link rel="stylesheet" href="./style.css?rev=world21d">
+  <link rel="stylesheet" href="./compact-ui.css?rev=world21d">
+  <link rel="stylesheet" href="./touch-ui.css?rev=world21e">
+</head>
+<body class="booting">
+  <main id="world" aria-label="秋月存档街区驾驶场景">
+    <div id="loading" role="status" aria-live="polite" aria-busy="true"><div class="loading-car" aria-hidden="true"><span class="loading-row"><img class="loading-sprite" src="./assets/loading-yaris.webp" width="3072" height="2048" alt="" fetchpriority="high"></span></div><p id="loading-stage">正在准备驾驶世界</p><small id="loading-motion-status">灰色威姿旋转弹跳 · 读取动画始终无音乐</small><label class="loading-motion-control">弹跳动画 <select id="loading-motion-select" data-bounce-preference aria-label="加载与驾驶弹跳动画"><option value="on">开启弹跳</option><option value="system">跟随系统</option><option value="off">关闭弹跳</option></select></label><p id="loading-error" hidden></p><button id="loading-retry" type="button" hidden>重新读取</button><a id="loading-return" href="../index.html">返回文字主页</a></div>
+  </main>
+  <header class="glass topbar">
+    <a class="brand" href="../index.html"><img src="./assets/avatar.png" alt="Haisairova 的头像"><span><b>秋月存档街区<span class="dot">.</span></b><small>HAISAIROVA / EST. 2021</small></span></a>
+    <div class="top-actions"><button id="mobile-pause" type="button" aria-label="暂停并打开车辆与操作菜单">Ⅱ 菜单</button><a href="../index.html" class="return">返回文字主页 ↗</a><button id="nav-button" type="button">站点导航 ☰</button></div>
+  </header>
+  <section class="glass welcome" id="welcome"><span class="eyebrow"># LEGACY_ARCHIVE / 可玩原型</span><h1>兜个风，<br>顺便翻翻旧存档。</h1><p>这曾经是一个似乎很有用，<br>但完全没有用的网站。</p><div class="welcome-controls"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 驾驶 · <kbd>F</kbd> 阅读</div><button id="start-button" type="button">出发 →</button></section>
+  <div id="tunnel-fade" aria-hidden="true"></div><div id="impact-flash" aria-hidden="true"></div>
+  <aside class="road-card glass" aria-label="驾驶与路线HUD"><div class="hud-core"><span id="road-label">S01 / 高速入口</span><div id="hud-speed-slot"></div><b id="road-distance">沿出生点前方道路直行 →</b><p id="engine-state">AT 自动离合</p><div class="nav-row"><span class="nav-kicker">下一出口</span><b id="road-exit">正在读取道路</b></div><div class="nav-row camera-row"><span class="nav-kicker">下一摄像头</span><b id="camera-distance">正在读取道路</b></div><div id="visit-status" hidden></div></div><details id="hud-options"><summary>设置与计分</summary><div class="hud-options-content"><details id="drive-settings"><summary>驾驶设置</summary><label class="bounce-motion-control">弹跳动画 <select id="bounce-motion-select" data-bounce-preference aria-label="驾驶与加载弹跳动画"><option value="on">开启弹跳</option><option value="system">跟随系统</option><option value="off">关闭弹跳</option></select></label><select id="tuning-select" aria-label="动力调校"><option value="arcade">街机调校</option><option value="stock">原厂参考</option></select><button id="drive-mode-button" type="button" hidden>T · 履带 / 轮式</button><small id="vehicle-configuration"></small><small id="tuning-description"></small><select id="steering-select" aria-label="转向方式"><option value="keys">键盘 / 触屏转向</option><option value="mouse">鼠标位置转向</option></select><label class="mouse-settings">灵敏度 <input id="mouse-sensitivity" aria-label="鼠标转向灵敏度" type="range" min="0.5" max="2" step="0.1" value="1"></label><button id="mouse-center" type="button">C · 鼠标回中</button><select id="junction-select" aria-label="首个周期市镇立交类型"><option value="directional">定向弯道</option><option value="diamond" selected>菱形立交</option><option value="trumpet">喇叭立交</option></select><label class="stall-option"><input id="stall-toggle" type="checkbox"> MT 模拟熄火</label></details><p id="steering-hint">WASD / 触屏 · Esc 暂停</p><b id="rollover-state" hidden>车身倾覆 · R 原地扶正</b><b id="monitor-score">监控总分 0</b><ol id="monitor-events" aria-live="polite"></ol><p id="challenge-status">安全超车 0分 · 连击 ×0</p><button id="challenge-button" type="button">开始 1 km 计时</button></div></details></aside>
+  <div id="recovery-countdown" class="glass" role="status" hidden></div>
+  <div id="toast" class="glass toast" role="status" aria-live="polite" hidden></div>
+  <button id="interact" class="glass interact" type="button" hidden><kbd>F</kbd> <span></span><b>↗</b></button>
+  <aside class="glass map-card" aria-label="实时道路小地图"><div class="map-heading"><span>道路导航</span><b id="map-mode">北朝上</b></div><canvas id="minimap" role="button" tabindex="0" title="打开世界地图 · M" aria-label="附近实际道路地图"></canvas><p id="map-direction">沿道路继续行驶</p><small class="map-legend">点击看大地图 · M · 车头 ▲</small><div class="collection-status"><span id="quest">存档碎片</span><b id="progress">0 / 8</b></div><svg hidden aria-hidden="true"><g id="map-tokens"></g><path id="map-car"/></svg></aside>
+  <button id="visit-button" class="glass" type="button" hidden>G · 停稳下车</button>
+  <footer class="glass dashboard"><div class="speed"><b id="speed">00</b><span>km/h<br><em id="gear">AT / 1挡</em><small id="rpm">900 rpm</small></span></div><span class="desktop-help"><kbd>W/S</kbd> 油门 / 制动 <kbd>A/D</kbd> 转向 <kbd>Space</kbd> <span id="space-help">刹车</span></span><select id="transmission-select" aria-label="变速模式"><option value="at">AT 自动</option><option value="mt">MT 手动</option><option value="cvt">CVT 连续变速</option></select><select id="car-select" aria-label="选择车型"><option value="chr">白色 C-HR · 2020外观</option><option value="yaris">灰色威姿</option></select><button id="reset-button" type="button" aria-label="短按原地扶正，长按两秒回到出生点" title="短按R原地扶正；长按2秒回到出生点">↺ <span>复位</span></button><button id="music-button" type="button" aria-label="驾驶音乐设置" title="加载本地原曲 / 音量">♫</button><button id="help-button" type="button" aria-label="查看驾驶说明">?</button></footer>
+  <div class="drive-extras glass"><button id="signal-left" data-signal="1" type="button" aria-label="Q 左转向灯" aria-pressed="false">◀ <small>Q</small></button><span class="shift-controls"><button data-key="ControlLeft" type="button" aria-label="Ctrl 离合">离合</button><button data-shift="-1" type="button" aria-label="Z 降挡">Z −</button><button data-shift="1" type="button" aria-label="X 升挡">X ＋</button></span><button id="ignition-button" type="button" aria-label="I 发动机点火">I 点火</button><button id="signal-right" data-signal="-1" type="button" aria-label="E 右转向灯" aria-pressed="false"><small>E</small> ▶</button></div>
+  <aside id="tank-view-controls" class="tank-view-controls glass" hidden aria-label="BT-7 观察控制"><small id="tank-view-status">履带 · 左右差速</small><button id="tank-look-button" type="button" aria-pressed="false">鼠标环视</button><div id="tank-look-pad" aria-label="拖动环视区">拖动环视 ↔<br><small>炮塔跟随 · C 回中</small></div></aside>
+  <div class="touch-controls" aria-label="双拇指驾驶控制">
+    <div id="touch-stick" role="slider" tabindex="0" aria-label="虚拟摇杆：左右转向，松手回正" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"><span class="stick-track" aria-hidden="true">‹<i></i>›</span><span id="touch-stick-knob" aria-hidden="true"></span><small id="touch-stick-label">转向</small></div>
+    <div id="touch-signals" aria-label="转向灯"></div>
+    <div id="touch-directions" aria-label="停稳后选择行驶方向"><button data-touch-direction="1" aria-pressed="true" type="button">D 前进</button><button data-touch-direction="-1" aria-pressed="false" type="button">R 倒车</button></div>
+    <div id="touch-clutch-slot" aria-label="按住离合后点选升降挡"></div><div id="touch-shift-slot" aria-label="手动换挡"></div>
+    <div class="pedals"><button data-key="TouchBrake" class="touch-brake" aria-label="按住脚刹，松开释放，不自动倒车" type="button"><b>刹车</b><small>按住制动</small></button><button data-key="TouchThrottle" class="touch-throttle" aria-label="按住油门，松开释放" type="button"><b>油门</b><small>按住行驶</small></button><button data-key="Space" class="touch-handbrake" aria-label="按住后轮手刹，可配合转向漂移及弹跳" type="button">手刹</button></div>
+  </div>
+  <dialog id="pause-menu" class="glass pause-menu" aria-labelledby="pause-title"><span class="eyebrow">SIMULATION PAUSED</span><h2 id="pause-title">歇一会儿。</h2><p>驾驶、交通、计时和计分已暂停。</p><button id="resume-button" type="button">继续驾驶 · Esc</button><button id="pause-map" type="button">查看世界地图 · M</button><button id="pause-reset" type="button">原地扶正并继续</button><p id="mobile-recovery-status" role="status" hidden></p><section id="mobile-options" aria-label="车辆、变速箱和辅助控制"><p>左手摇杆转向，右手按住油门。脚刹只制动；停稳再选 D / R。MT 按住离合，再点 − / ＋ 换挡。</p></section><p class="pause-note">恢复会清除油门和转向输入。鼠标转向可在驾驶设置中启用，按 C 回中。</p></dialog>
+  <dialog id="world-map" class="world-map" aria-labelledby="world-map-title"><header class="world-map-top"><div><span class="eyebrow">EXPLORE / 已知世界</span><h2 id="world-map-title">沿着路，慢慢认识这里。</h2></div><button id="world-map-close" type="button" aria-label="关闭世界地图">返回驾驶 · M / Esc</button></header><div class="world-map-body"><canvas id="world-map-canvas" tabindex="0" aria-label="可拖动缩放的已知道路世界地图，方向键移动，加减号缩放"></canvas><div class="world-map-tools" aria-label="地图操作"><button id="world-map-in" type="button" aria-label="放大地图">＋</button><button id="world-map-out" type="button" aria-label="缩小地图">−</button><button id="world-map-locate" type="button" aria-label="回到车辆位置">定位</button></div><p class="world-map-help">拖动移动 · 滚轮 / 双指缩放<br>只查看地图，不会移动车辆</p></div><footer><p id="world-map-status" role="status">读取探索记录…</p><small>驾驶、交通与音乐已暂停 · 绿色为经过路段，灰色虚线为已知连接</small></footer></dialog>
+  <dialog id="showroom" class="showroom" aria-labelledby="showroom-title"><header class="showroom-header"><div><span class="eyebrow">JIANGWAN / 观车棚</span><h2 id="showroom-title">停下来，看看你的车。</h2></div><button id="showroom-close" type="button">返回步行 · Esc</button></header><div class="showroom-body"><div class="showroom-view" id="showroom-view" tabindex="0" role="img" aria-label="三维车辆预览，可拖动旋转，滚轮或双指缩放，方向键微调"></div><aside class="showroom-details"><label for="showroom-car">展示车型（不会切换驾驶车辆）</label><select id="showroom-car"></select><p id="showroom-status" role="status" aria-live="polite">正在准备观车模型…</p><button id="showroom-retry" type="button" hidden>重试模型读取</button><div class="showroom-paint"><label for="showroom-color">车漆 <input type="color" id="showroom-color" value="#b8bdbf"></label><button id="showroom-original" type="button">还原原色</button></div><button id="showroom-apply" type="button">应用配色</button><select id="showroom-mode" aria-label="BT-7预览轮履状态" hidden><option value="tracks">预览履带状态</option><option value="wheels">预览轮式状态</option></select><dl id="showroom-facts"></dl><a id="showroom-source" target="_blank" rel="noopener noreferrer">查看配置资料 ↗</a><small>独立模型预览 · 交通与音乐暂停<br>配色只保留本次会话，不影响物理参数</small></aside></div></dialog>
+  <dialog id="panel" class="glass panel" aria-labelledby="panel-title"><button id="close-panel" type="button" aria-label="关闭信息面板">✕</button><span id="panel-tag" class="eyebrow"></span><h2 id="panel-title"></h2><div id="panel-body"></div><div class="panel-footer">F / 关闭按钮继续 · Esc 暂停</div></dialog>
+  <section id="fallback" class="glass fallback" hidden><span class="eyebrow">文字导航仍然在这里</span><h1>这次没能启动街区。</h1><p>浏览器无法运行 3D 场景。你仍可以阅读旧主页，或打开下面的原站链接。</p><div id="fallback-links"></div><a class="primary-link" href="../index.html">返回文字主页 →</a></section>
+  <noscript><style>body.booting #loading{display:none!important}body.booting>noscript{visibility:visible!important}.noscript{position:fixed;z-index:1001;inset:20px auto auto 20px;max-width:calc(100vw - 40px)}</style><div class="glass noscript">驾驶街区需要 JavaScript。<a href="../index.html">返回文字主页</a></div></noscript>
+  <script id="drive-motion-bootstrap">
+  // Core game bounce is an explicit site preference, independent of camera motion.
+  // It runs before any imported game/WASM module and never creates audio.
+  (()=>{
+    const key='drive.bounce-motion.v1',allowed=['on','system','off'];
+    const media=matchMedia('(prefers-reduced-motion: reduce)');
+    let choice='on';try{const saved=localStorage.getItem(key);if(allowed.includes(saved))choice=saved;}catch{}
+    const listeners=new Set();
+    const api={get choice(){return choice;},get enabled(){return choice==='on'||choice==='system'&&!media.matches;},
+      set(value){if(!allowed.includes(value))return;choice=value;try{localStorage.setItem(key,value);}catch{}sync();},
+      subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+    function sync(){
+      document.documentElement.dataset.bounceMotion=api.enabled?'on':'off';
+      document.documentElement.dataset.bouncePreference=choice;
+      for(const el of document.querySelectorAll('[data-bounce-preference]'))el.value=choice;
+      const status=document.getElementById('loading-motion-status');
+      if(status)status.textContent=api.enabled?'灰色威姿旋转弹跳 · 读取动画始终无音乐':choice==='system'?'跟随系统：已减少动态效果 · 可选择开启弹跳':'弹跳动画已关闭 · 可选择重新开启';
+      for(const fn of listeners)fn(api.enabled);
+    }
+    globalThis.driveMotionPreference=api;
+    for(const el of document.querySelectorAll('[data-bounce-preference]'))el.addEventListener('change',()=>api.set(el.value));
+    if(media.addEventListener)media.addEventListener('change',sync);else media.addListener?.(sync);
+    sync();
+  })();
+  </script>
+  <script>
+  // This escape path needs no downloaded module, canvas, audio or physics.
+  (()=>{
+    const byId=id=>document.getElementById(id);
+    globalThis.driveStartupFailure=error=>{
+      if(document.body.dataset.ready==='true')return;
+      const message=String(error?.message||error||'启动脚本读取失败，请重试。');
+      document.body.dataset.startupError=message;
+      const layer=byId('loading');layer.hidden=false;layer.classList.add('loading-failed');layer.setAttribute('aria-busy','false');
+      byId('loading-stage').textContent='读取未完成';byId('loading-error').textContent=message;byId('loading-error').hidden=false;
+      byId('loading-retry').hidden=false;
+    };
+    byId('loading-retry').onclick=()=>location.reload();
+    addEventListener('error',event=>{
+      if(event.target?.id==='drive-boot')driveStartupFailure('启动脚本读取失败，请检查连接后重试。');
+      else if(event.target===window&&event.message&&!document.body.dataset.ready)driveStartupFailure(event.error||event.message);
+    },true);
+  })();
+  </script>
+  <script id="drive-boot" type="module" src="./boot.js?rev=world21g"></script>
+</body>
+</html>

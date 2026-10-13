@@ -1,0 +1,29 @@
+const visualTags=m=>{let role=m.userData.cameraOccluderRole,owner=m.userData.cameraRoadId;for(let p=m.parent;p&&(role===undefined||owner===undefined);p=p.parent){role??=p.userData.cameraOccluderRole;owner??=p.userData.cameraRoadId;}return{role,owner};};
+const originalMaterial=m=>m.userData.cameraFadeOriginalMaterial||m.material;
+// Bake static visual children into material batches. Physics meshes and animated
+// subtrees remain untouched; original metric vertices, normals and UVs survive.
+export function batchStaticVisuals(T,root,{exclude=new Set(),recursive=true,includePhysics=false}={}){
+ root.updateMatrixWorld(true);const inverse=root.matrixWorld.clone().invert(),groups=new Map(),original=[];
+ const visit=o=>{if(exclude.has(o)||!o.visible||(o.userData?.driveCollider&&!includePhysics))return;if(o.isMesh&&o.geometry?.attributes.position&&!Array.isArray(o.material)&&!o.isInstancedMesh){const material=originalMaterial(o),tags=visualTags(o),key=material.uuid+"|"+(tags.role||"")+"|"+(tags.owner||"");let group=groups.get(key);if(!group){group={material,tags,meshes:[],shadow:false,receive:false};groups.set(key,group);}group.meshes.push(o);group.shadow||=o.castShadow;group.receive||=o.receiveShadow;original.push(o);}if(recursive)for(const child of o.children)visit(child);};
+ for(const child of root.children)visit(child);
+ let removed=0,created=0;for(const[,group]of groups){const{material,tags}=group;if(group.meshes.length<2)continue;const positions=[],normals=[],uvs=[],indices=[],v=new T.Vector3(),n=new T.Vector3(),matrix=new T.Matrix4(),normalMatrix=new T.Matrix3();for(const mesh of group.meshes){matrix.multiplyMatrices(inverse,mesh.matrixWorld);normalMatrix.getNormalMatrix(matrix);const g=mesh.geometry,p=g.attributes.position,normal=g.attributes.normal,uv=g.attributes.uv,index=g.index,offset=positions.length/3;for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(matrix);positions.push(v.x,v.y,v.z);if(normal)n.fromBufferAttribute(normal,i).applyNormalMatrix(normalMatrix);else n.set(0,1,0);normals.push(n.x,n.y,n.z);uvs.push(uv?uv.getX(i):0,uv?uv.getY(i):0);}for(let i=0;i<(index?.count??p.count);i++)indices.push(offset+(index?index.getX(i):i));}
+  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeBoundingSphere();geometry.computeBoundingBox();const batch=new T.Mesh(geometry,material);batch.castShadow=group.shadow;batch.receiveShadow=group.receive;batch.userData.staticVisualBatch=true;batch.userData.cameraOccluderRole=tags.role;batch.userData.cameraRoadId=tags.owner;root.add(batch);created++;for(const m of group.meshes){if(includePhysics&&m.userData.driveCollider){m.visible=false;m.userData.collisionOnly=true;}else m.parent.remove(m);removed++;}
+ }
+ return{removed,created};
+}
+
+// Large road batches use typed buffers filled one small mesh at a time. This
+// keeps the final 'merge' from becoming a second 200ms main-thread task.
+export function* batchStaticVisualsSteps(T,root){
+ root.updateMatrixWorld(true);const inverse=root.matrixWorld.clone().invert(),groups=new Map();
+ root.traverse(m=>{if(!m.isMesh||!m.visible||m.isInstancedMesh||Array.isArray(m.material)||!m.geometry?.attributes.position||m.geometry.attributes.position.count<3)return;const material=originalMaterial(m),tags=visualTags(m),key=material.uuid+"|"+(tags.role||"")+"|"+(tags.owner||"");let group=groups.get(key);if(!group){group={material,tags,meshes:[]};groups.set(key,group);}group.meshes.push(m);});
+ for(const{material,meshes,tags}of groups.values()){if(meshes.length<2)continue;
+  const size=meshes.reduce((n,m)=>n+m.geometry.attributes.position.count,0),count=meshes.reduce((n,m)=>n+(m.geometry.index?.count??m.geometry.attributes.position.count),0),positions=new Float32Array(size*3),normals=new Float32Array(size*3),uvs=new Float32Array(size*2),indices=new Uint32Array(count),box=new T.Box3(),v=new T.Vector3(),n=new T.Vector3(),matrix=new T.Matrix4(),normalMatrix=new T.Matrix3();let vertex=0,ix=0,shadow=false,receive=false;yield;
+  for(const m of meshes){matrix.multiplyMatrices(inverse,m.matrixWorld);normalMatrix.getNormalMatrix(matrix);const p=m.geometry.attributes.position,normal=m.geometry.attributes.normal,uv=m.geometry.attributes.uv,index=m.geometry.index;
+   for(let j=0;j<p.count;j++){v.fromBufferAttribute(p,j).applyMatrix4(matrix);const at=(vertex+j)*3;positions[at]=v.x;positions[at+1]=v.y;positions[at+2]=v.z;box.expandByPoint(v);if(normal)n.fromBufferAttribute(normal,j).applyNormalMatrix(normalMatrix);else n.set(0,1,0);normals[at]=n.x;normals[at+1]=n.y;normals[at+2]=n.z;if(uv){uvs[(vertex+j)*2]=uv.getX(j);uvs[(vertex+j)*2+1]=uv.getY(j);}}
+   for(let j=0;j<(index?.count??p.count);j++)indices[ix++]=vertex+(index?index.getX(j):j);vertex+=p.count;shadow||=m.castShadow;receive||=m.receiveShadow;yield 'visual-copy:'+p.count;
+  }
+  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));geometry.setAttribute('normal',new T.BufferAttribute(normals,3));geometry.setAttribute('uv',new T.BufferAttribute(uvs,2));geometry.setIndex(new T.BufferAttribute(indices,1));geometry.boundingBox=box;geometry.boundingSphere=box.getBoundingSphere(new T.Sphere());const batch=new T.Mesh(geometry,material);batch.castShadow=shadow;batch.receiveShadow=receive;batch.userData.staticVisualBatch=true;batch.userData.cameraOccluderRole=tags.role;batch.userData.cameraRoadId=tags.owner;root.add(batch);
+  for(const m of meshes){if(m.userData.driveCollider){m.visible=false;m.userData.collisionOnly=true;m.geometry.dispose();}else{m.parent.remove(m);m.geometry.dispose();}}yield;
+ }
+}

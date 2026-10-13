@@ -1,0 +1,4 @@
+import{regionForIndex}from'./regions.mjs?rev=world21d';
+export const readSceneRoute=path=>/\/drive\/crabbay(?:\/|$)/.test(path)?'crabbay':/\/drive\/highway(?:\/|$)/.test(path)?'highway':'town';
+export const scenePath=(mode,town=null)=>'/drive/'+(mode==='crabbay'||mode==='city'&&town?.index!=null&&regionForIndex(town.index).kind==='crabbay'?'crabbay':mode==='city'?'town':'highway')+'/';
+export function syncSceneRoute(mode,town=null){const path=scenePath(mode,town),params=new URLSearchParams(location.search);if(mode==='city'&&town?.index!=null&&regionForIndex(town.index).kind!=='crabbay')params.set('region',regionForIndex(town.index).id);else params.delete('region');const query=params.toString(),url=path+(query?'?'+query:'')+location.hash;if(location.pathname+location.search+location.hash!==url)history.replaceState({scene:mode,region:town?.index??null},'',url);}

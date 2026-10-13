@@ -1,0 +1,77 @@
+/* world20r: explicit touch-safe rows, shared by driving and destination visits.
+   Map / view tools are separate from the context, MT, pedal and dashboard rows.
+   The map is always available. Landscape keeps both route rows and F actions. */
+@media (max-width:700px), (max-height:760px) {
+ body { --ui-bottom:max(8px,env(safe-area-inset-bottom));--ui-left:max(12px,env(safe-area-inset-left));--ui-right:max(12px,env(safe-area-inset-right)); }
+ .topbar { top:8px;left:var(--ui-left);right:var(--ui-right);height:56px;padding:8px 12px; }
+ .brand img { width:30px;height:30px; }.brand b{font-size:14px}.brand small{font-size:7px}
+ .top-actions{gap:8px}.top-actions button{font-size:10px;padding:10px}.return{display:none}
+ .road-card,body.on-highway .road-card { top:74px;left:var(--ui-left);width:156px;padding:9px 10px;max-height:none;overflow:visible; }
+ .hud-core #road-label{font-size:8px;line-height:1.4}.hud-core #road-distance,.hud-core #engine-state{display:none}
+ #hud-speed-slot .speed{margin:4px 0;gap:7px;min-width:0}#hud-speed-slot .speed b{font-size:26px}#hud-speed-slot .speed span{font-size:7px}
+ .nav-row{padding:6px 0}.nav-row .nav-kicker{font-size:8px;line-height:1.3}.nav-row #road-exit{font-size:10px;line-height:1.4;margin-top:3px}.nav-row #camera-distance{font-size:14px;line-height:1.3;margin-top:3px}
+ #hud-options{display:block;position:relative}#hud-options>summary{font-size:9px;padding:5px 0}
+ #hud-options[open] .hud-options-content{position:absolute;left:0;top:100%;z-index:30;width:min(280px,calc(100vw - 44px));max-height:min(300px,45dvh);padding:10px;border:1px solid #c7d9cf;border-radius:10px;background:#f5f8f6;box-shadow:0 12px 32px #18372b33;overflow:auto;overscroll-behavior:contain}
+ .map-card { top:74px;right:var(--ui-right);bottom:auto;width:128px;height:clamp(120px,calc(100dvh - 406px - var(--ui-bottom)),172px);padding:8px;flex-direction:column; }
+ .map-card:not([hidden]){display:flex!important}
+ .map-card .map-heading{font-size:9px;line-height:12px;flex:none}.map-heading b{font-size:7px}
+ .map-card #minimap,body.walking .map-card #minimap { flex:1;min-height:50px;height:0;width:100%;margin:6px 0; }
+ .map-card #map-direction{display:block;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:12px;margin:0}
+ .map-card .map-legend,.map-card .collection-status{display:none}
+ .dashboard,body.on-highway .dashboard { left:var(--ui-left);right:var(--ui-right);bottom:var(--ui-bottom);height:58px;padding:6px 8px;display:grid;grid-template-columns:57px 77px 40px 40px 40px;justify-content:center;gap:4px; }
+ .dashboard .desktop-help{display:none}.dashboard #car-select{width:77px;font-size:9px;padding:10px 3px;height:44px}.dashboard #transmission-select{width:57px;font-size:9px;padding:10px 2px;height:44px}
+ .dashboard #help-button,.dashboard #music-button,.dashboard #reset-button{width:40px;height:44px;padding:8px}.dashboard #reset-button span{display:none}
+ .touch-controls { bottom:calc(var(--ui-bottom) + 68px);left:var(--ui-left);right:var(--ui-right); }
+ .touch-controls button { width:49px;height:52px; }
+ .drive-extras { left:var(--ui-left);bottom:calc(var(--ui-bottom) + 130px);height:44px;max-width:calc(100vw - 24px);padding:3px;gap:3px; }
+ .drive-extras button { min-width:32px;height:36px;padding:4px 6px;font-size:10px; }.shift-controls{gap:3px}
+ #visit-button,body.walking #visit-button { top:auto;left:auto;right:var(--ui-right);bottom:calc(var(--ui-bottom) + 184px);width:140px;height:44px;min-height:44px;padding:8px;font-size:10px; }
+ #interact:not([hidden]),body.walking #interact:not([hidden]) { display:flex!important;top:auto;left:var(--ui-left);right:auto;bottom:calc(var(--ui-bottom) + 184px);width:144px;min-width:0;max-width:144px;height:44px;min-height:44px;transform:none;padding:8px;font-size:9px;gap:5px; }
+ body.walking #visit-button{left:var(--ui-left);right:auto;width:144px}body.walking #interact:not([hidden]){left:auto;right:var(--ui-right);width:140px}
+ .tank-view-controls,body.walking .tank-view-controls { top:auto;left:auto;right:var(--ui-right);bottom:calc(var(--ui-bottom) + 238px);width:128px;height:72px;padding:5px;display:grid;grid-template-columns:1fr 1.2fr;grid-template-rows:12px 44px;gap:4px; }
+ .tank-view-controls>small,body.walking .tank-view-controls>small{display:block;grid-column:1/-1;font-size:8px;line-height:12px;margin:0;white-space:nowrap;overflow:hidden}
+ .tank-view-controls button{height:44px;padding:4px;font-size:9px}
+ #tank-look-pad,body.walking #tank-look-pad{margin:0;padding:4px 2px;font-size:9px;line-height:1.3;display:flex;align-items:center;justify-content:center;height:44px}
+ #tank-look-pad br,#tank-look-pad small{display:none}
+ .welcome { top:auto;left:var(--ui-left);right:var(--ui-right);bottom:calc(var(--ui-bottom) + 184px);width:auto;transform:none;padding:3px; }.welcome h1,.welcome p{display:none}.welcome button{height:38px;margin:0;padding:6px}
+ #visit-status{font-size:9px;line-height:1.4}
+}
+/* Short landscape: navigation occupies one shallow top-left card. The centre
+   gap between the steering and pedals is reserved for the independent view pad. */
+@media (max-height:520px) and (min-width:540px) {
+ .topbar{top:8px;height:40px;padding:4px 12px}.brand small{display:none}.brand img{width:28px;height:28px}
+ .road-card,body.on-highway .road-card{top:56px;width:min(360px,calc(100vw - var(--ui-left) - var(--ui-right) - 140px));height:108px;padding:7px 10px}
+ .hud-core{display:grid;grid-template-columns:86px minmax(0,1fr);grid-template-rows:12px 40px 30px;column-gap:10px}
+ .hud-core #road-label{grid-column:1/-1;font-size:7px;line-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ #hud-speed-slot{grid-column:1;grid-row:2/4}#hud-speed-slot .speed{align-items:flex-start;gap:5px;margin-top:8px;flex-wrap:wrap}#hud-speed-slot .speed b{font-size:23px}#hud-speed-slot .speed span{font-size:7px;line-height:1.3}
+ .nav-row{grid-column:2;grid-row:2;border-top:0;padding:2px 0}.nav-row.camera-row{grid-row:3}
+ .nav-row .nav-kicker{font-size:7px;line-height:10px}.nav-row #road-exit{font-size:9px;line-height:12px;margin:0}.nav-row #camera-distance{font-size:12px;line-height:16px;margin:0}
+ #hud-options{position:absolute;left:10px;bottom:3px}#hud-options>summary{padding:1px 0;font-size:8px}
+ #hud-options[open] .hud-options-content{position:absolute;top:calc(100% + 4px);left:0;max-height:calc(100dvh - 176px)}
+ .map-card{top:56px;height:108px;width:128px;padding:6px}.map-card #map-direction{display:none}.map-card #minimap,body.walking .map-card #minimap{margin:3px 0 0}
+ .dashboard,body.on-highway .dashboard{height:44px;padding:3px 8px;gap:6px}.dashboard #car-select,.dashboard #transmission-select,.dashboard #help-button,.dashboard #music-button,.dashboard #reset-button{height:36px;padding-top:6px;padding-bottom:6px}
+ .touch-controls{bottom:calc(var(--ui-bottom) + 52px)}.touch-controls button{width:44px;height:44px;border-radius:11px}
+ .drive-extras{bottom:calc(var(--ui-bottom) + 100px);width:224px;height:44px}.drive-extras button{flex:1;min-width:0;padding:4px;font-size:9px}.shift-controls{flex:3;min-width:0}
+ #visit-button,body.walking #visit-button{bottom:calc(var(--ui-bottom) + 100px);right:var(--ui-right);left:auto;width:140px}
+ #interact:not([hidden]),body.walking #interact:not([hidden]){bottom:calc(var(--ui-bottom) + 100px);left:calc(var(--ui-left) + 236px);right:auto;width:clamp(80px,calc(100vw - var(--ui-left) - var(--ui-right) - 380px),156px);max-width:156px}
+ body.walking #visit-button{left:var(--ui-left);right:auto}body.walking #interact:not([hidden]){left:auto;right:var(--ui-right);width:140px}
+ .tank-view-controls,body.walking .tank-view-controls{left:calc(50% - 90px);right:auto;bottom:calc(var(--ui-bottom) + 52px);width:180px;height:44px;padding:0;grid-template-columns:70px 1fr;grid-template-rows:42px;gap:4px;border:0;background:transparent;box-shadow:none;backdrop-filter:none}
+ .tank-view-controls>small,body.walking .tank-view-controls>small{display:none}.tank-view-controls button,#tank-look-pad,body.walking #tank-look-pad{height:44px;background:#f6fbf2ed;border:1px solid #b8d0c5}
+ body.walking .hud-core #visit-status{grid-column:2;grid-row:2/4;margin:4px 0;font-size:9px;line-height:1.4}
+ .welcome{left:248px;right:164px;bottom:calc(var(--ui-bottom) + 100px);width:auto;height:44px}.welcome button{font-size:10px;line-height:1.2;height:36px}
+}
+
+/* Expanded settings may cover driving tools intentionally, but the summary
+   remains exposed so touch users can always close them. */
+.road-card:has(#hud-options[open]){z-index:30}
+.pause-menu{max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+@media (max-height:360px) and (min-width:540px){
+ .topbar{top:4px;height:32px}.top-actions button{padding:6px 10px}.brand img{width:24px;height:24px}
+ .road-card,body.on-highway .road-card{top:44px;height:min(108px,calc(100dvh - var(--ui-bottom) - 192px))}
+ .hud-core{height:100%;grid-template-rows:12px minmax(30px,1fr) 26px}
+ .map-card{top:44px;height:min(108px,calc(100dvh - var(--ui-bottom) - 192px))}
+ #hud-options[open] .hud-options-content{top:calc(100% + 4px);max-height:132px}
+}
+
+/* Welcome owns its start row until the first driving gesture. */
+body:not(.started) #interact,body:not(.started) #visit-button{display:none!important}
