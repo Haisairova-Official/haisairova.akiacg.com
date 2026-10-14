@@ -11,7 +11,9 @@ export function createVirtualJoystick({pad,knob,blocked,walking=()=>false,onActi
  let owner=null,rect=null,radius=1,axes=joystickAxes(0,0,1),active=false;const handlers=[];
  const on=(name,fn)=>{pad.addEventListener(name,fn);handlers.push(()=>pad.removeEventListener(name,fn));};
  function reset(){const id=owner;owner=null;active=false;axes=joystickAxes(0,0,1);pad.classList.remove('active');knob.style.transform='translate(0px,0px)';pad.setAttribute('aria-valuenow','0');if(id!==null&&pad.hasPointerCapture?.(id))pad.releasePointerCapture(id);}
- function move(e){if(e.pointerId!==owner)return;if(blocked()||e.clientX<rect.left-24||e.clientX>rect.right+24||e.clientY<rect.top-24||e.clientY>rect.bottom+24){reset();return;}e.preventDefault();axes=joystickAxes(e.clientX-(rect.left+rect.width/2),e.clientY-(rect.top+rect.height/2),radius,walking());knob.style.transform=`translate(${axes.x*radius}px,${axes.y*radius}px)`;pad.setAttribute('aria-valuenow',String(Math.round(-axes.steer*100)));}
+ // Capture owns the gesture until lift/cancel, even outside the fixed base.
+ // joystickAxes clamps the knob and authority; boundary events must not release it.
+ function move(e){if(e.pointerId!==owner)return;if(blocked()){reset();return;}e.preventDefault();axes=joystickAxes(e.clientX-(rect.left+rect.width/2),e.clientY-(rect.top+rect.height/2),radius,walking());knob.style.transform=`translate(${axes.x*radius}px,${axes.y*radius}px)`;pad.setAttribute('aria-valuenow',String(Math.round(-axes.steer*100)));}
  on('pointerdown',e=>{if(blocked()||owner!==null||e.button!==0)return;e.preventDefault();owner=e.pointerId;active=true;rect=pad.getBoundingClientRect();radius=Math.max(16,Math.min(rect.width,rect.height)/2-27);pad.classList.add('active');pad.setPointerCapture(owner);onActivate();move(e);});
  on('pointermove',move);for(const type of['pointerup','pointercancel','lostpointercapture'])on(type,e=>{if(e.pointerId===owner)reset();});
  reset();return{reset,get value(){return{...axes,active};},dispose(){reset();for(const off of handlers)off();}};

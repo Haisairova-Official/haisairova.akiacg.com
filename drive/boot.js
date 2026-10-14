@@ -6,7 +6,7 @@ try {
  reportFailure=failLoading;
  // Let the silent compositor-only Yaris paint before heavy modules/WASM.
  await loadingStage('读取驾驶与物理模块');
- await import('./app.js?rev=world21g');
+ await import('./app.js?rev=world21s');
 } catch (error) {
  console.error('Drive could not initialise:',error);
  reportFailure?.(error);

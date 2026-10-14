@@ -1,12 +1,14 @@
-import {createVirtualJoystick,bindHoldButtons,composeTouchInput,canChangeTouchDirection} from './touch-driving.mjs?rev=world21e';
+import {readServiceStart} from './service-start.mjs?rev=world21h';
+import {createTinoCharacter} from './tino-character.js?rev=world21l';
+import {createVirtualJoystick,bindHoldButtons,composeTouchInput,canChangeTouchDirection} from './touch-driving.mjs?rev=world21i';
 import {configureVehiclePowertrain,syncTransmissionChoices,chooseElectricRange} from './vehicle-controls.mjs?rev=world21d';
 import{setVehiclePaint,disposePreview}from'./vehicle-paint.js?rev=world21d';
-import {createDestinationVisit,PARKED_INPUT} from './destination-visit.mjs?rev=world21e';
+import {createDestinationVisit,PARKED_INPUT} from './destination-visit.mjs?rev=world21m';
 import {regionForIndex,regionById,CRABBAY_INDEX} from './regions.mjs?rev=world21d';
 import {createTankDirectionAssist,createTankView} from './bt7-controls.mjs?rev=world21e';
 import {createTurretFollower} from './bt7-model.js?rev=world21d';
 import {createTankLookInput} from './tank-look-input.js?rev=world21d';
-import {createCameraOcclusion} from './camera-occlusion.mjs?rev=world21g';
+import {createCameraOcclusion} from './camera-occlusion.mjs?rev=world21p';
 import {loadingStage,finishLoading,nextLoadingPaint} from './loading.js?rev=world21d';
 import {FLEET,fleetSpec} from './fleet-specs.mjs?rev=world21d';
 import {createFleetVehicle,setFleetVisualMode} from './fleet-models.js?rev=world21d';
@@ -25,25 +27,26 @@ import { userTrack } from './audio-source.js?rev=world21d';
 
 let createHighway,createTownScene,createRegionScenes,regionScenes;
 import { readSceneRoute, syncSceneRoute } from './scene-router.mjs?rev=world21d';
+const initialServiceStart=readServiceStart(location.pathname,location.search);
 const initialScene=readSceneRoute(location.pathname),initialRegion=initialScene==='town'?regionById(new URLSearchParams(location.search).get('region')):null;
-import {createRecoveryHold} from './recovery-input.mjs?rev=world21d';
+import {createRecoveryHold} from './recovery-input.mjs?rev=world21o';
 const recoveryHold=createRecoveryHold(2);let recoveryInMenu=false;
-const cancelRecovery=()=>{recoveryHold.cancel();recoveryInMenu=false;for(const id of['recovery-countdown','mobile-recovery-status']){const el=document.getElementById(id);if(el)el.hidden=true;}};
+const cancelRecovery=()=>{const source=recoveryHold.source;recoveryHold.cancel();recoveryInMenu=false;if(source?.startsWith('pointer:')){const button=document.getElementById('reset-button'),id=Number(source.slice(8));try{if(button?.hasPointerCapture?.(id))button.releasePointerCapture(id);}catch{}}for(const id of['recovery-countdown','mobile-recovery-status']){const el=document.getElementById(id);if(el)el.hidden=true;}};
 
 import {powertrainSpec} from './powertrain-specs.mjs?rev=world21d';
 import {shiftGear,ignite} from './transmission.mjs?rev=world21d';
 import {createSignals,toggleSignal,resetSignals,stepSignals} from './signals.mjs?rev=world21d';
 import {addTurnLights,applyTurnLights} from './vehicle-effects.js?rev=world21d';
 import {captureGroundHull,rolloverGroundY} from './vehicle-grounding.js?rev=world21d';
-import {createInputGuard,createShiftBuffer,createInputSources,DRIVING_KEYS,drivingCode} from './driving-input.mjs?rev=world21d';
+import {createInputGuard,createShiftBuffer,createInputSources,DRIVING_KEYS,drivingCode} from './driving-input.mjs?rev=world21h';
 
 const $ = id => document.getElementById(id);
 const routeMap=createMinimap($('minimap'));
 const inputSources=createInputSources(),keys=inputSources.keys,heldPointers=inputSources.pointers,inputGuard=createInputGuard(),shiftBuffer=createShiftBuffer();
-const state = createCarState(),signal=createSignals();const visit=createDestinationVisit(state,{onMessage:text=>toast(text)});let walkerModel;let signalOn=false;
+const state = createCarState(),signal=createSignals();const visit=createDestinationVisit(state,{onMessage:text=>toast(text),canRest:()=>tinoCharacter?.readyToSit!==false});let walkerModel,tinoCharacter;let signalOn=false;
 const panel = $('panel'),pauseMenu=$('pause-menu');
 let showroom=null,touchStick=null,holdButtons=null,touchDirection=1;
-let paused=false,modelLoading=false,steeringMode='keys',mouseSteer=0,mouseAnchorX=innerWidth/2,lastMouseX=innerWidth/2;
+let paused=false,graphicsLost=false,modelLoading=false,steeringMode='keys',mouseSteer=0,mouseAnchorX=innerWidth/2,lastMouseX=innerWidth/2;
 let nearest = null, started = false, toastTimer, renderer, scene, camera, vehicle;
 let lastTime = 0, accumulator = 0, elapsed = 0, uiTime = 0, frameAverage=1/60, performanceWindow=0, renderScale=1;
 let cameraOcclusion,highway,highwayStats={},sunLight,cameraTrackX=state.x,sceneObjects=0;const cameraAim={x:0,y:1,z:0};let cameraHeading=0,townRoot,townSerial=0,townPose={x:0,z:0,y:0,angle:0,index:null};
@@ -83,7 +86,23 @@ function pauseDriving(){
  if(panel.open)panel.close();document.body.classList.add('paused');pauseMenu.showModal();$('resume-button').focus();updateUI();
 }
 function resumeDriving(){
- if(!paused)return;cancelRecovery();releaseDrivingControls();lastTime=0;accumulator=0;paused=false;pauseMenu.close();document.body.classList.remove('paused');music.gesture();renderer?.domElement.focus({preventScroll:true});updateUI();
+ if(!paused)return;if(graphicsLost)return;cancelRecovery();releaseDrivingControls();lastTime=0;accumulator=0;paused=false;$('graphics-status').hidden=true;pauseMenu.close();document.body.classList.remove('paused');music.gesture();renderer?.domElement.focus({preventScroll:true});updateUI();
+}
+// A lost GPU context is a simulation interruption, not permission to keep
+// moving unseen. Three restores its own GPU resources; the player resumes.
+function loseGraphics(event){
+ event.preventDefault();graphicsLost=true;document.body.dataset.graphicsLost='true';
+ cancelRecovery();inputGuard.block();releaseDrivingControls();music.stop();lastTime=0;accumulator=0;
+ if(document.body.dataset.ready!=='true')return;
+ worldMap.close();showroom?.close();if(panel.open)panel.close();pauseDriving();
+ $('resume-button').disabled=true;$('graphics-status').hidden=false;$('graphics-status').textContent='3D 画面暂时中断，车辆与模拟已暂停。正在等待画面恢复；也可重新载入。';$('graphics-reload').hidden=false;
+}
+function restoreGraphics(){
+ if(!graphicsLost)return;graphicsLost=false;document.body.dataset.graphicsLost='false';
+ inputGuard.block();releaseDrivingControls();lastTime=0;accumulator=0;
+ if(document.body.dataset.ready!=='true')return;
+ $('resume-button').disabled=false;$('graphics-reload').hidden=true;$('graphics-status').hidden=false;$('graphics-status').textContent='画面已恢复。确认准备好后，点击继续驾驶。';
+ updateUI();
 }
 const mapContext=()=>({...(highway?.mapContext?.(state)||{mode:'city',town:townPose}),...(visit.walking?{parkedVehicle:{x:state.x,z:state.z,y:state.roadY},range:110}:{})});
 const activePose=()=>visit.walking?{...visit.walker,roadY:visit.walker.y,vehicle:'walker'}:state;
@@ -91,12 +110,13 @@ const worldMap=createWorldMap({dialog:$('world-map'),canvas:$('world-map-canvas'
  onOpen(){showroom?.close();cancelRecovery();inputGuard.block();releaseDrivingControls();music.stop();if(document.pointerLockElement)document.exitPointerLock();document.body.classList.add('map-open');updateUI();},
  onClose(){inputGuard.block();releaseDrivingControls();lastTime=0;accumulator=0;document.body.classList.remove('map-open');if(paused)$('resume-button').focus();else if(!panel.open)renderer?.domElement.focus({preventScroll:true});updateUI();}
 });
-const simulationPaused=()=>paused||worldMap.opened||modelLoading||!!showroom?.opened;
+const simulationPaused=()=>graphicsLost||paused||worldMap.opened||modelLoading||!!showroom?.opened;
 $('minimap').onclick=()=>worldMap.open();
 $('minimap').addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)worldMap.open();}});
 $('pause-map').onclick=()=>worldMap.open();
 function centerMouse(){if(visit.walking){visit.centre();toast('步行视角已回中');return;}if(activeCar==='bt7'){tankView.centre(state.heading);toast('环视回中 · 观察方向对准车头');return;}mouseAnchorX=lastMouseX;mouseSteer=0;toast('鼠标已回中 · 当前位置为新的转向中点');}
-$('resume-button').onclick=resumeDriving;$('pause-reset').onclick=()=>{resumeDriving();reset();};
+$('resume-button').onclick=resumeDriving;$('pause-reset').onclick=()=>{if(graphicsLost)return;resumeDriving();reset();};
+$('graphics-reload').onclick=()=>location.reload();
 pauseMenu.addEventListener('cancel',e=>{e.preventDefault();resumeDriving();});
 $('steering-select').onchange=e=>{if(visit.walking)return;steeringMode=e.target.value==='mouse'?'mouse':'keys';mouseSteer=0;mouseAnchorX=innerWidth/2;lastMouseX=mouseAnchorX;toast(steeringMode==='mouse'?'鼠标位置转向：左右移动，C 回中；A/D 仍可转向。':'已切回键盘 / 触屏转向。');renderer?.domElement.focus({preventScroll:true});updateUI();};
 $('mouse-center').onclick=()=>{centerMouse();renderer?.domElement.focus({preventScroll:true});};
@@ -104,10 +124,10 @@ function toast(text) {
   $('toast').textContent = text; $('toast').hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 3500);
 }
-function start() {
+function start({preserveFocus=false}={}) {
   if(document.body.dataset.ready!=='true')return;
   started = true; document.body.classList.add('started'); $('welcome').hidden = true;
-  renderer?.domElement.focus({preventScroll:true});
+  if(!preserveFocus)renderer?.domElement.focus({preventScroll:true});
 }
 function showPanel(title, tag, contents) {
   cancelRecovery();if(visit.walking){inputGuard.block();releaseDrivingControls();music.stop();}else clearInput(); $('panel-title').textContent = title; $('panel-tag').textContent = tag;
@@ -146,12 +166,13 @@ function reset() {
 }
 function respawn(){touchDirection=1;visit.dispose();document.body.classList.remove('walking');cameraOcclusion?.reset();
  clearInput();if(panel.open)panel.close();respawnCar(state);
- highway.reset();if(initialScene==='highway')highway.startOnRoad(state,'A+',-1550,0);else if(initialScene==='crabbay')highway.startInRegion(state,CRABBAY_INDEX);else if(initialRegion?.index)highway.startInRegion(state,initialRegion.index);
+ highway.reset();if(initialServiceStart)highway.startInService(state,{recovery:true});else if(initialScene==='highway')highway.startOnRoad(state,'A+',-1550,0);else if(initialScene==='crabbay')highway.startInRegion(state,CRABBAY_INDEX);else if(initialRegion?.index)highway.startInRegion(state,initialRegion.index);
  bounceClock=0;tankView.reset(state.heading);cameraTrackX=state.x;syncVehicle();positionCamera(true);syncSceneRoute(highway.mode,townPose);toast('已回到本次出发点 · 车辆姿态与速度已重置');renderer?.domElement.focus({preventScroll:true});
 }
-function beginRecovery(source){const inMenu=paused&&pauseMenu.open&&source.startsWith('pointer:')&&!worldMap.opened&&!showroom?.opened&&!modelLoading;if(document.body.dataset.ready!=='true'||panel.open||simulationPaused()&&!inMenu)return;if(recoveryHold.begin(source)){recoveryInMenu=inMenu;if(!inMenu)start();$(inMenu?'mobile-recovery-status':'recovery-countdown').hidden=false;}}
+function beginRecovery(source){if(graphicsLost)return false;const inMenu=paused&&pauseMenu.open&&source.startsWith('pointer:')&&!worldMap.opened&&!showroom?.opened&&!modelLoading;if(document.body.dataset.ready!=='true'||panel.open||simulationPaused()&&!inMenu)return false;if(!recoveryHold.begin(source))return false;recoveryInMenu=inMenu;if(!inMenu)start({preserveFocus:source.startsWith('button:')});$(inMenu?'mobile-recovery-status':'recovery-countdown').hidden=false;return true;}
 function endRecovery(source){if(recoveryHold.release(source)==='local')reset();if(!recoveryHold.active)cancelRecovery();}
 function stepRecovery(raw){
+  if(graphicsLost)return;
   if(!document.hidden&&recoveryHold.active&&!panel.open&&(!simulationPaused()||recoveryInMenu&&paused&&!worldMap.opened&&!showroom?.opened&&!modelLoading)){if(recoveryHold.step(raw)==='spawn')respawn();else{$(recoveryInMenu?'mobile-recovery-status':'recovery-countdown').textContent=`继续按住 ${recoveryHold.remaining.toFixed(1)} 秒 → 回到出生点`;}}
 }
 function changeGear(direction){if(visit.walking)return;if(shiftBuffer.request(direction,state,keys.has('ControlLeft')||keys.has('ControlRight')))return;const result=shiftGear(state,direction);toast(result.reason);updateUI();renderer?.domElement.focus({preventScroll:true});}
@@ -171,10 +192,11 @@ $('interact').onclick = interact;
 function toggleVisit(){if(simulationPaused()||panel.open)return;inputGuard.block();cancelRecovery();releaseDrivingControls();music.stop();const result=visit.toggle();if(result.ok){resetSignals(signal);document.body.classList.toggle('walking',visit.walking);positionCamera(true);updateUI();}renderer?.domElement.focus({preventScroll:true});}
 $('visit-button').onclick=toggleVisit;
 const recoveryButton=$('reset-button');
-recoveryButton.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();recoveryButton.setPointerCapture(e.pointerId);beginRecovery('pointer:'+e.pointerId);};
-recoveryButton.onpointermove=e=>{const r=recoveryButton.getBoundingClientRect();if(e.clientX<r.left-6||e.clientX>r.right+6||e.clientY<r.top-6||e.clientY>r.bottom+6)cancelRecovery();};
-recoveryButton.onpointerup=e=>{e.preventDefault();endRecovery('pointer:'+e.pointerId);};recoveryButton.onpointercancel=cancelRecovery;recoveryButton.onlostpointercapture=cancelRecovery;
-recoveryButton.onkeydown=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)beginRecovery('button:'+e.code);}};recoveryButton.onkeyup=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();e.stopPropagation();endRecovery('button:'+e.code);}};recoveryButton.onclick=e=>e.preventDefault();
+const ownsRecoveryPointer=e=>recoveryHold.source==='pointer:'+e.pointerId;
+recoveryButton.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();if(!beginRecovery('pointer:'+e.pointerId))return;try{recoveryButton.setPointerCapture(e.pointerId);}catch{cancelRecovery();}};
+recoveryButton.onpointermove=e=>{if(!ownsRecoveryPointer(e))return;const r=recoveryButton.getBoundingClientRect();if(e.clientX<r.left-6||e.clientX>r.right+6||e.clientY<r.top-6||e.clientY>r.bottom+6)cancelRecovery();};
+recoveryButton.onpointerup=e=>{e.preventDefault();if(ownsRecoveryPointer(e))endRecovery('pointer:'+e.pointerId);};recoveryButton.onpointercancel=e=>{if(ownsRecoveryPointer(e))cancelRecovery();};recoveryButton.onlostpointercapture=e=>{if(ownsRecoveryPointer(e))cancelRecovery();};
+recoveryButton.onkeydown=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)beginRecovery('button:'+e.code);}};recoveryButton.onkeyup=e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();e.stopPropagation();endRecovery('button:'+e.code);}};recoveryButton.onblur=()=>{if(recoveryHold.source?.startsWith('button:'))cancelRecovery();};recoveryButton.onclick=e=>e.preventDefault();
 $('help-button').onclick = () => showPanel('驾驶说明', 'HOW TO / 轻轻开，慢慢逛', [node('p','W 前进，S 刹停后倒车。A / D 转向。S 是四轮脚刹；Space 是后轮手刹，转向时可使后轮侧滑，同时保留原动作弹跳和音乐。松开 Space 后若仍在滑行，行驶联动继续。短按 R 松开原地扶正；长按 R / 复位 2 秒回到本次出发点。靠近地标按 F 阅读，再按 F 或关闭按钮返回；Esc 会暂停整套模拟，再按 Esc 或点击继续恢复。M 或点击小地图打开可拖动缩放的世界地图，查看已探索和已知连接；打开时暂停，M / Esc 返回。Q / E 左右转向灯；真正转向后回正自动关闭。鼠标左键降挡 / 右键升挡，Z / X 也可。'),node('p','蔚来 ET5T 与领克10 EV 使用原厂单速固定减速。变速选择器为 D / N / R，D/R须完全停稳并松油门；N只滑行，无驱动与回收。W/S默认前进、刹停后倒车。松油回收与脚刹共用总制动力预算；没有燃油离合、怠速、MT/CVT模拟或点火。参数页标明质量/减速比等估计，暂不模拟电量消耗或充电；加油泵不适用于电动车。'),node('p','CVT 为连续变比，鼠标换挡不适用。车型与年款决定原厂变速箱，非原厂选项标（模拟）；C-HR 1.2T 为机械 CVT，不是混动 e-CVT。03+ 为 8AT、思域 1.8GL 为 5AT，其起步耦合仍为近似。大运有真实铰接挂车；BT-7 的 W/S 是前进/刹停后倒车，A/D 操纵车体；点击右侧“鼠标环视”或拖动环视区观察，炮塔平滑跟随视角，C 回中，Esc 释放并暂停。4MT 加了方向辅助，前进挡仍用 Ctrl + 鼠标换挡；按住 Ctrl 可在 N 挡空转，启用熄火后仍须 I 点火。BT-7 停稳后按 T 或驾驶设置按钮切换履带/轮式，切换过程为游戏简化。所有车型共享物理与娱乐弹跳独立层；驾驶设置可切原厂参考或街机调校，显示独立扭矩和终传倍率。MT 默认 N：按住 Ctrl 离合，在驾驶画布上用鼠标左键降挡 / 右键升挡（Z / X 备用）；W 油门、S 刹车，缓慢释放离合起步。停稳后可降到 R，W 驱动倒车。I 点火，须停稳且 N 或踩住离合。默认防熄火；勾选模拟熄火后，停车不踩离合或低速高挡可能熄火。高速过度降挡会被转速保护拒绝。触屏可以同时按住方向与油门，并使用仪表旁灯光与换挡按钮。方块按钮后轮手刹并弹跳，停稳后原地弹跳。收集 8 枚蓝色存档碎片。沿出生点前方道路直行进入 S01 高速；高速和互通按种子随行驶生成，可到更多高速；双向总4/6/8车道，外侧应急车道不作正常行车道。市镇出口位于互通之间，驶完整段连接路进入提前加载的街区，保留车辆位置与速度；沿街区道路可经加速车道重新汇入。高速上轻按方向键换道。可开始 1 km 计时，碰撞 +3 秒；安全超车可连击加分，碰撞会清连击。'),node('p','驾驶设置可选鼠标位置转向和灵敏度，C 将鼠标当前位置设为回中点；不锁鼠标，离开画布或打开菜单即释放转向，A/D 和触屏仍可使用。高速剧烈反向转向可能引起侧滑、动态载荷转移与翻车，和弹跳动画无关；短按 R 在当前位置扶正，保留道路与朝向；长按 2 秒回到本次出发点。'),node('p','监控是游戏自定义规则：低于60 km/h扣50，60至不足100不计分，100至120加50，超过120至144不计分，超过144至不足180扣200，180及以上扣500。监控前300米有预告；附近实际超车未打对应方向灯扣50，持续骑线扣100，项目可叠加。倒车和复位不能重复刷分。'),node('p','江湾高速南北双向各设独立服务区，沿本方向加减速道驶入驶出，不能穿越中分带掉头。整车停进停车场后按 G 下车，WASD 或触屏方向步行，鼠标环视；F 操作油泵、休息长椅与作品展板；观车棚展台可自由旋转全部车型、查看参数并调色。打开观车界面暂停车辆、交通和音乐，关闭后回原位置。回到车门旁按 G 上车。加油为无费用的游戏补给演示，尚不模拟油耗和燃油耗尽。步行打开 M 地图或 Esc 会暂停，关闭后重新按键才移动。'),node('p','所有车型行驶时弹跳并联动本地音频；停驶恢复正常。♫ 可加载你有权使用的原曲、调音量或静音。面板、失焦、切车型会暂停歌曲并保留进度，下次弹跳从原处继续；读取动画始终静音。弹跳动画可独立开启、关闭或跟随系统；镜头动态和碰撞闪光仍遵循系统减少动态效果设置。')]);
 $('music-button').onclick=()=>{
   const status=node('p');status.id='audio-status';
@@ -205,7 +227,7 @@ window.addEventListener('keydown', e => {
   if (code === 'KeyF' && !e.repeat) { e.preventDefault(); interact(); return; }
   if (panel.open || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) {inputGuard.block();return;}
   if(code==='KeyG'&&!e.repeat){e.preventDefault();toggleVisit();return;}
-  if(visit.walking){if(code==='KeyR'){e.preventDefault();if(!e.repeat)beginRecovery('key');return;}if(code==='KeyC'&&!e.repeat){e.preventDefault();centerMouse();return;}if(DRIVING_KEYS.has(code)&&!['Space','ControlLeft','ControlRight'].includes(code)){e.preventDefault();inputSources.keydown(code);}return;}
+  if(visit.walking){if(code==='KeyR'){e.preventDefault();if(!e.repeat)beginRecovery('key');return;}if(code==='KeyC'&&!e.repeat){e.preventDefault();centerMouse();return;}if((DRIVING_KEYS.has(code)||code==='ShiftLeft'||code==='ShiftRight')&&!['Space','ControlLeft','ControlRight'].includes(code)){e.preventDefault();inputSources.keydown(code);}return;}
   if(code==='KeyR'){e.preventDefault();if(!e.repeat)beginRecovery('key');return;}
   if(code==='KeyC'&&!e.repeat&&(steeringMode==='mouse'||activeCar==='bt7')){e.preventDefault();centerMouse();return;}
   if(code==='KeyT'&&!e.repeat&&activeCar==='bt7'){e.preventDefault();$('drive-mode-button').click();return;}
@@ -218,7 +240,7 @@ window.addEventListener('keydown', e => {
     e.preventDefault(); inputSources.keydown(code); start();music.gesture();
   }
 });
-window.addEventListener('keyup',e=>{const code=drivingCode(e);if(code==='KeyR'){e.preventDefault();endRecovery('key');}inputSources.keyup(code);inputGuard.keyup(code);});
+window.addEventListener('keyup',e=>{const code=drivingCode(e);if(recoveryHold.source==='button:'+code)cancelRecovery();if(code==='KeyR'){e.preventDefault();endRecovery('key');}inputSources.keyup(code);inputGuard.keyup(code);});
 window.addEventListener('blur',()=>{cancelRecovery();inputGuard.blur();if(simulationPaused()){releaseDrivingControls();music.stop();}else clearInput();music.suspend();});
 document.addEventListener('visibilitychange', () => {cancelRecovery();inputGuard.blur();if(simulationPaused()){releaseDrivingControls();music.stop();}else clearInput();music.suspend();lastTime = 0; accumulator = 0;});
 // Touch controls own their gestures independently. Menus invalidate every owner.
@@ -238,7 +260,7 @@ const mobileMoves=[[$('hud-options'),$('mobile-options')],[$('nav-button'),$('mo
 function syncTouchLayout(){releaseDrivingControls();const enabled=mobileMedia.matches;document.body.classList.toggle('touch-layout',enabled);for(const {node,target,marker}of mobileMoves)if(enabled)target.append(node);else marker.after(node);}
 mobileMedia.addEventListener('change',syncTouchLayout);syncTouchLayout();
 window.addEventListener('resize',()=>{touchStick.reset();holdButtons.reset();tankLook?.suspend();cancelRecovery();});
-window.addEventListener('pagehide',()=>{inputGuard.blur();releaseDrivingControls();music.suspend();});
+window.addEventListener('pagehide',()=>{cancelRecovery();inputGuard.blur();releaseDrivingControls();music.suspend();});
 const fallbackList = node('div',null,'link-list');
 for (const s of stops) {
   const a=link(s); a.replaceChildren(node('span',s.name),node('small',s.tag.includes('已停止')?'已停止运营 ↗':'↗'));
@@ -249,7 +271,7 @@ $('fallback-links').append(fallbackList);
 try {
   await loadingStage('读取三维画面与场景');
   const THREE = await import('./vendor/three.module.min.js');
-  [{createTownScene},{createHighway},{createRegionScenes}]=await Promise.all([import('./town/scene.js?rev=world21d'),import('./highway/scene.js?rev=world21d'),import('./region-scene.js?rev=world21d')]);
+  [{createTownScene},{createHighway},{createRegionScenes}]=await Promise.all([import('./town/scene.js?rev=world21d'),import('./highway/scene.js?rev=world21p'),import('./region-scene.js?rev=world21d')]);
   await init(THREE);
 } catch (error) {
   console.error('Drive scene unavailable:',error); clearInput();
@@ -264,6 +286,8 @@ async function init(T) {
   scene = new T.Scene(); scene.background = new T.Color(0xdce8ee); scene.fog = new T.Fog(0xdce8ee,62,145);
   camera = new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,650);
   renderer = new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+  renderer.domElement.addEventListener('webglcontextlost',loseGraphics);
+  renderer.domElement.addEventListener('webglcontextrestored',restoreGraphics);
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.7)); renderer.setSize(innerWidth,innerHeight);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.outputColorSpace = T.SRGBColorSpace; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
@@ -281,8 +305,9 @@ async function init(T) {
    regionScenes=createRegionScenes(T,scene,town,{sign,defer:true});const moveTown=pose=>{townPose={...pose};townSerial++;const entry=regionScenes.load(pose);townRoot=entry.root;cameraOcclusion?.reset();return entry.prepare;};moveTown(townPose);
    await loadingStage('构建高速、匝道与地形');
    highway=createHighway(T,scene,{sign,toast,onTownLoad:moveTown,deferBuild:true});
-   if(initialScene==='highway')highway.startOnRoad(state,'A+',-1550,0);else if(initialScene==='crabbay')highway.startInRegion(state,CRABBAY_INDEX);else if(initialRegion?.index)highway.startInRegion(state,initialRegion.index);
+   if(initialServiceStart)highway.startInService(state);else if(initialScene==='highway')highway.startOnRoad(state,'A+',-1550,0);else if(initialScene==='crabbay')highway.startInRegion(state,CRABBAY_INDEX);else if(initialRegion?.index)highway.startInRegion(state,initialRegion.index);
   }
+  if(initialServiceStart){$('welcome').querySelector('h1').textContent='蒂诺 · 江湾服务区';$('welcome').querySelector('p').textContent='点击出发，等车停稳后按 G 或点“停稳下车”见到蒂诺。WASD 步行、Shift 跑步；手机摇杆推满跑步，右侧拖动观察。走回车门旁再按 G 上车。';}
   if(initialScene==='crabbay'){$('welcome').querySelector('h1').textContent='CRABBAY · 螃蟹湾';$('welcome').querySelector('p').textContent='沿海岸道路看看后勤基地与码头，再沿连接路驶回高速。当前为环境原型，具体剧情仍待确认。';}
   await loadingStage('准备车辆与驾驶界面');
   vehicles.set('yaris',createYaris(T));
@@ -326,20 +351,21 @@ async function init(T) {
    onClose(){inputGuard.block();releaseDrivingControls();lastTime=0;accumulator=0;document.body.classList.remove('showroom-open');if(worldMap.opened)$('world-map-close').focus();else if(paused)$('resume-button').focus();else renderer.domElement.focus({preventScroll:true});updateUI();},
    onApply(kind,hex){const car=vehicles.get(kind);if(car)setVehiclePaint(car,hex);}
   });
-  followTankTurret=createTurretFollower(T);walkerModel=new T.Group();const coat=new T.MeshStandardMaterial({color:0x497980,roughness:.8}),skin=new T.MeshStandardMaterial({color:0xe0be9f,roughness:.8});const torso=new T.Mesh(new T.CapsuleGeometry(.22,.48,4,8),coat);torso.position.y=1.0;const head=new T.Mesh(new T.SphereGeometry(.19,10,8),skin);head.position.y=1.63;walkerModel.add(torso,head);for(const side of[-1,1]){const leg=new T.Mesh(new T.CylinderGeometry(.10,.09,.58,7),coat);leg.position.set(side*.13,.30,0);walkerModel.add(leg);}walkerModel.visible=false;scene.add(walkerModel);
+  followTankTurret=createTurretFollower(T);tinoCharacter=createTinoCharacter(T,{onStatus:status=>{document.body.dataset.tinoStatus=status;}});walkerModel=tinoCharacter.root;scene.add(walkerModel);
   tankLook=createTankLookInput({canvas:renderer.domElement,button:$('tank-look-button'),pad:$('tank-look-pad'),enabled:()=>activeCar==='bt7'||visit.walking,blocked:()=>simulationPaused()||panel.open,onMove:(dx,dy)=>visit.walking?visit.look(dx,dy):tankView.move(dx,dy),onActivate:()=>{start();music.gesture();},onLost:pauseDriving,onError:()=>toast('鼠标环视未启用，可拖动右侧环视区观察。')});
   window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7)*renderScale);});
   renderer.domElement.addEventListener('pointermove',e=>{if(visit.walking||activeCar==='bt7'||e.pointerType!=='mouse'||simulationPaused()||panel.open||steeringMode!=='mouse'||!started||document.activeElement!==renderer.domElement)return;lastMouseX=e.clientX;mouseSteer=Math.max(-1,Math.min(1,(mouseAnchorX-e.clientX)/(innerWidth*.35)*+$('mouse-sensitivity').value));});
   renderer.domElement.addEventListener('pointerleave',()=>{mouseSteer=0;});
   renderer.domElement.addEventListener('pointerdown',e=>{if(visit.walking||e.pointerType!=='mouse'||simulationPaused()||panel.open||!started||document.activeElement!==renderer.domElement)return;if(e.button===0||e.button===2){e.preventDefault();changeGear(e.button===0?-1:1);}});
   renderer.domElement.addEventListener('contextmenu',e=>{if(!simulationPaused()&&!panel.open&&started&&document.activeElement===renderer.domElement)e.preventDefault();});
-  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();clearInput();toast('3D 画面暂时中断，可使用站点导航或返回文字主页。');});
   scene.traverse(()=>sceneObjects++);
   await loadingStage('准备车辆接地与道路碰撞');
   await highway.preparePhysics?.(state,nextLoadingPaint);
   cameraOcclusion=createCameraOcclusion(T,scene,{excluded:()=>[walkerModel,...vehicles.values()].flatMap(v=>[v,v.userData.trailerModel]).concat((highway.traffic||[]).flatMap(t=>[t.node,t.trailerNode])).filter(Boolean),protectedRoads:()=>highway.cameraRoadOwners?.()||[]});
   await loadingStage('准备第一帧画面');
+  if(graphicsLost||renderer.getContext().isContextLost())throw new Error('3D 画面在启动时中断，请点击重新载入。');
   highwayStats=highway.animate(state,0,0,false,bounceMotionEnabled());scene.updateMatrixWorld(true);cameraOcclusion.update(camera,state,0);updateUI();renderer.render(scene,camera);
+  if(graphicsLost||renderer.getContext().isContextLost())throw new Error('3D 画面在启动时中断，请点击重新载入。');
   releaseDrivingControls();inputGuard.block();await finishLoading();
   requestAnimationFrame(frame);
 }
@@ -357,7 +383,7 @@ function syncVehicle(){
 }
 function positionCamera(snap=false,dt=1/60){
  const onHighway=['highway','ramp','local'].includes(highway?.mode);scene.fog.near=onHighway?170:62;scene.fog.far=onHighway?440:145;
- if(visit.walking){const p=visit.walker,h=visit.viewYaw,pitch=visit.viewPitch,d=7.5,t=snap?1:1-Math.exp(-dt*8);const target={x:p.x-Math.sin(h)*Math.cos(pitch)*d,y:p.y+1.25+Math.sin(pitch)*d,z:p.z-Math.cos(h)*Math.cos(pitch)*d};for(const k of['x','y','z'])camera.position[k]+=(target[k]-camera.position[k])*t;camera.lookAt(p.x,p.y+1.1,p.z);camera.fov=47;camera.updateProjectionMatrix();if(sunLight){sunLight.position.set(p.x-32,p.y+52,p.z+22);sunLight.target.position.set(p.x,p.y,p.z);}return;}
+ if(visit.walking){const p=visit.walker,h=visit.viewYaw,pitch=visit.viewPitch,d=7.5,t=snap?1:1-Math.exp(-dt*8);const target={x:p.x-Math.sin(h)*Math.cos(pitch)*d,y:p.y+1.25+Math.sin(pitch)*d,z:p.z-Math.cos(h)*Math.cos(pitch)*d};for(const k of['x','y','z'])camera.position[k]+=(target[k]-camera.position[k])*t;camera.lookAt(p.x,p.y+1.1,p.z);if(camera.fov!==47){camera.fov=47;camera.updateProjectionMatrix();}if(sunLight){sunLight.position.set(p.x-32,p.y+52,p.z+22);sunLight.target.position.set(p.x,p.y,p.z);}return;}
 
   if(Math.abs(cameraTrackX-state.x)>80)snap=true;cameraTrackX=state.x;
   const delta=Math.atan2(Math.sin(state.heading-cameraHeading),Math.cos(state.heading-cameraHeading));cameraHeading+=delta*(snap?1:1-Math.exp(-dt*7));const dx=Math.sin(cameraHeading),dz=Math.cos(cameraHeading);
@@ -372,9 +398,12 @@ function positionCamera(snap=false,dt=1/60){
   if(sunLight){sunLight.position.set(state.x-32,52,state.z+22);sunLight.target.position.set(state.x,0,state.z);}
 }
 function updateTankTurret(dt){if(!visit.walking&&activeCar==='bt7'&&!panel.open)followTankTurret?.(vehicle,camera,dt);}
+// Keep telemetry current without rewriting identical data-* attributes.
+// Compare live DOM values so external changes are repaired on the next update.
+function updateDataset(...sources){const dataset=document.body.dataset;for(const source of sources)for(const key of Object.keys(source)){const value=String(source[key]);if(dataset[key]!==value)dataset[key]=value;}}
 function updateUI(){
   if(state.transmission!=='mt'&&state.gear!==0)touchDirection=Math.sign(state.gear);
-  $('touch-stick-label').textContent=visit.walking?'移动':'转向';$('touch-stick').setAttribute('aria-label',visit.walking?'虚拟摇杆：二维步行':'虚拟摇杆：向左或向右转向，松手回正');for(const b of document.querySelectorAll('[data-touch-direction]'))b.setAttribute('aria-pressed',String(state.gear!==0&&Number(b.dataset.touchDirection)===touchDirection));
+  $('touch-stick-label').textContent=visit.walking?'移动 · 推满跑步':'转向';$('touch-stick').setAttribute('aria-label',visit.walking?'虚拟摇杆：二维步行':'虚拟摇杆：向左或向右转向，松手回正');for(const b of document.querySelectorAll('[data-touch-direction]'))b.setAttribute('aria-pressed',String(state.gear!==0&&Number(b.dataset.touchDirection)===touchDirection));
   const electric=powertrainSpec(activeCar,state.tuning).type==='ev';document.body.classList.toggle('electric',electric);
   $('steering-select').disabled=activeCar==='bt7'||visit.walking;$('mouse-center').textContent=activeCar==='bt7'?'C · 环视回中':'C · 鼠标回中';$('tank-view-status').textContent=state.driveMode==='wheels'?'轮式 · 前轮转向':'履带 · 左右差速';$('steering-hint').textContent=activeCar==='bt7'?'W/S 前后 · A/D 车身 · 鼠标环视 / 炮塔 · C 回中':steeringMode==='mouse'?'鼠标位置转向 · C 回中 · Esc 暂停':'WASD / 触屏 · Esc 暂停';$('rollover-state').hidden=!state.rolled;
   $('speed').textContent=String(Math.round((state.groundSpeed??Math.abs(state.speed))*3.6)).padStart(2,'0');
@@ -388,15 +417,15 @@ function updateUI(){
   const local=localTown(state);nearest=highway?.mode!=='city'?null:(townPose.index==null?stops:regionScenes?.current.interactions||[]).filter(s=>Math.hypot(s.x-local.x,s.z-local.z)<s.radius).sort((a,b)=>Math.hypot(a.x-local.x,a.z-local.z)-Math.hypot(b.x-local.x,b.z-local.z))[0]||null;
   const visitTarget=visit.target();$('interact').hidden=visit.walking?!visitTarget||panel.open:!nearest||panel.open;
   if(visit.walking&&visitTarget)$('interact').querySelector('span').textContent=visitTarget.kind==='stand'?'起身':visitTarget.name;else if(nearest)$('interact').querySelector('span').textContent='阅读 · '+nearest.name;
-  $('visit-button').hidden=!started||!visit.walking&&!visit.nearby();$('visit-button').textContent=visit.walking?'G · 回到车内':'G · 停稳下车';$('visit-status').hidden=!visit.walking;$('visit-status').textContent=visit.action?`加油中 ${Math.max(0,visit.action.remaining).toFixed(1)}s`:visit.resting?'休息中 · F起身':electric?'WASD步行 · F交互 · 纯电车不使用油泵':`WASD步行 · F交互 · 燃油${Math.round(state.fuelLevel*100)}%`;for(const id of['car-select','transmission-select','tuning-select','drive-mode-button','ignition-button','pause-reset','stall-toggle','junction-select','challenge-button'])$(id).disabled=visit.walking;
+  $('visit-button').hidden=!started||!visit.walking&&!visit.nearby();$('visit-button').textContent=visit.walking?'G · 回到车内':'G · 停稳下车';$('visit-status').hidden=!visit.walking;$('visit-status').textContent=visit.action?`加油中 ${Math.max(0,visit.action.remaining).toFixed(1)}s`:visit.standing?'起身中…':visit.resting?'休息中 · F起身':electric?'WASD步行 · F交互 · 纯电车不使用油泵':`WASD步行 · F交互 · 燃油${Math.round(state.fuelLevel*100)}%`;for(const id of['car-select','transmission-select','tuning-select','drive-mode-button','ignition-button','pause-reset','stall-toggle','junction-select','challenge-button'])$(id).disabled=visit.walking;
   $('stall-toggle').checked=state.stallEnabled;$('stall-toggle').disabled=visit.walking||electric;$('ignition-button').disabled=visit.walking||electric;$('tuning-select').disabled=visit.walking||electric;$('tuning-select').value=state.tuning;
   if(electric)$('tuning-description').textContent=`原厂电驱峰值 · 单速 ${driveSpec.motors.map(m=>m.reductionRatio.toFixed(1)).join(' / ')} :1（估计） · ${driveSpec.mass}kg 含驾驶员${activeCar==='et5t'?'，质量估计':''} · 回收与轮胎模型；暂无电量消耗/充电仿真`;
   $('tank-view-controls').hidden=activeCar!=='bt7'&&!visit.walking;$('tank-view-controls').setAttribute('aria-label',visit.walking?'步行观察控制':'BT-7 观察控制');$('tank-look-pad').querySelector('small').textContent=visit.walking?'观察周围 · C 回中':'炮塔跟随 · C 回中';
 
 
   // Observable state used by the browser acceptance checks; no control hooks.
-  Object.assign(document.body.dataset,{buildVersion:'world21g',bounceEnabled:String(bounceMotionEnabled()),bouncePreference:globalThis.driveMotionPreference?.choice||'on',powertrainType:electric?'ev':'ice',motorPowerKW:(state.motorPowerKW||0).toFixed(2),regenPowerKW:(state.regenPowerKW||0).toFixed(2),showroomOpen:String(!!showroom?.opened),actorMode:visit.mode,walker:JSON.stringify(visit.walking?visit.walker:null),fuelLevel:state.fuelLevel,cameraOccluders:cameraOcclusion?.stats.active||0,driveMode:state.driveMode||'',tankViewYaw:tankView.yaw.toFixed(4),tankViewPitch:tankView.pitch.toFixed(4),turretYaw:(vehicle?.userData.turretPivot?.rotation.y||0).toFixed(4),tankLookLocked:String(!!tankLook?.locked),trailer:JSON.stringify(state.trailer||null),paused:String(simulationPaused()),modelLoading:String(modelLoading),userPaused:String(paused),mapOpen:String(worldMap.opened),steeringMode,mouseSteer:mouseSteer.toFixed(3),rolled:String(!!state.rolled),loadTransfer:(state.loadTransfer||0).toFixed(4),lateralAcceleration:(state.lateralAcceleration||0).toFixed(4),rolloverAngle:(state.rolloverAngle||0).toFixed(4),physicsEngine:state.physicsEngine||'',physicsMass:state.physicsMass||0,chassisY:(state.chassisY||0).toFixed(4),wheelLoads:JSON.stringify(state.wheelLoads||[]),wheelContacts:JSON.stringify(state.wheelContacts||[]),quaternion:JSON.stringify(state.quaternion||{}),brakePressure:(state.brakePressure||0).toFixed(3),handbrakePressure:(state.handbrakePressure||0).toFixed(3),cvtRatio:(state.cvtRatio||0).toFixed(4),x:state.x.toFixed(3),z:state.z.toFixed(3),heading:state.heading.toFixed(3),speed:state.speed.toFixed(3),collisions:state.collisions,nearest:nearest?.id||'',collected:tokens.filter(t=>t.collected).length,car:activeCar,yarisMode,recoveryHolding:String(recoveryHold.active),recoveryRemaining:recoveryHold.remaining.toFixed(2),bodyScaleY:vehicle?.scale.y.toFixed(4)||'1',bodyScaleX:vehicle?.scale.x.toFixed(4)||'1',suspension:(vehicle?.userData.suspension||0).toFixed(4),bounceLift:(vehicle?.userData.bounceLift||0).toFixed(4),tuning:state.tuning,transmission:state.transmission,gear:state.gear,rpm:state.rpm.toFixed(0),clutch:state.clutch.toFixed(3),clutchSlip:state.clutchSlip.toFixed(0),engineRunning:String(state.engineRunning),stallEnabled:String(state.stallEnabled),vx:state.vx.toFixed(3),vz:state.vz.toFixed(3),slip:state.slip.toFixed(3),steer:state.steer.toFixed(3),wheelAngle:(state.wheelAngle||0).toFixed(5),shaftRpm:(state.shaftRPM||0).toFixed(1),engineTorque:(state.engineTorque||0).toFixed(1),clutchTorque:(state.clutchTorque||0).toFixed(1),wheelForce:(state.wheelForce||0).toFixed(1),roadResistance:(state.roadResistance||0).toFixed(1),enginePower:(state.enginePower||0).toFixed(1),clutchEngagement:(state.clutchEngagement||0).toFixed(3),throttle:(state.throttle||0).toFixed(3),pitch:state.pitch.toFixed(4),roll:state.roll.toFixed(4),signalSide:signal.side,signalOn:String(signalOn),signalArmed:String(signal.armed),lampLeft:vehicle?.userData.turnLights.get(1).emissiveIntensity||0,lampRight:vehicle?.userData.turnLights.get(-1).emissiveIntensity||0,wheelScale:vehicle?.userData.wheels[0].pivot.scale.toArray().join(',')||'1,1,1'});
-  Object.assign(document.body.dataset,highwayStats,{sceneObjects,gpuGeometries:renderer?.info.memory.geometries||0,gpuTextures:renderer?.info.memory.textures||0});
+  updateDataset({buildVersion:'world21s',tinoStatus:tinoCharacter?.status||'loading',tinoAnimation:tinoCharacter?.animation||'',bounceEnabled:String(bounceMotionEnabled()),bouncePreference:globalThis.driveMotionPreference?.choice||'on',powertrainType:electric?'ev':'ice',motorPowerKW:(state.motorPowerKW||0).toFixed(2),regenPowerKW:(state.regenPowerKW||0).toFixed(2),showroomOpen:String(!!showroom?.opened),actorMode:visit.mode,walker:JSON.stringify(visit.walking?visit.walker:null),fuelLevel:state.fuelLevel,cameraOccluders:cameraOcclusion?.stats.active||0,driveMode:state.driveMode||'',tankViewYaw:tankView.yaw.toFixed(4),tankViewPitch:tankView.pitch.toFixed(4),turretYaw:(vehicle?.userData.turretPivot?.rotation.y||0).toFixed(4),tankLookLocked:String(!!tankLook?.locked),trailer:JSON.stringify(state.trailer||null),paused:String(simulationPaused()),modelLoading:String(modelLoading),userPaused:String(paused),mapOpen:String(worldMap.opened),steeringMode,mouseSteer:mouseSteer.toFixed(3),rolled:String(!!state.rolled),loadTransfer:(state.loadTransfer||0).toFixed(4),lateralAcceleration:(state.lateralAcceleration||0).toFixed(4),rolloverAngle:(state.rolloverAngle||0).toFixed(4),physicsEngine:state.physicsEngine||'',physicsMass:state.physicsMass||0,chassisY:(state.chassisY||0).toFixed(4),wheelLoads:JSON.stringify(state.wheelLoads||[]),wheelContacts:JSON.stringify(state.wheelContacts||[]),quaternion:JSON.stringify(state.quaternion||{}),brakePressure:(state.brakePressure||0).toFixed(3),handbrakePressure:(state.handbrakePressure||0).toFixed(3),cvtRatio:(state.cvtRatio||0).toFixed(4),x:state.x.toFixed(3),z:state.z.toFixed(3),heading:state.heading.toFixed(3),speed:state.speed.toFixed(3),collisions:state.collisions,nearest:nearest?.id||'',collected:tokens.filter(t=>t.collected).length,car:activeCar,yarisMode,recoveryHolding:String(recoveryHold.active),recoveryRemaining:recoveryHold.remaining.toFixed(2),bodyScaleY:vehicle?.scale.y.toFixed(4)||'1',bodyScaleX:vehicle?.scale.x.toFixed(4)||'1',suspension:(vehicle?.userData.suspension||0).toFixed(4),bounceLift:(vehicle?.userData.bounceLift||0).toFixed(4),tuning:state.tuning,transmission:state.transmission,gear:state.gear,rpm:state.rpm.toFixed(0),clutch:state.clutch.toFixed(3),clutchSlip:state.clutchSlip.toFixed(0),engineRunning:String(state.engineRunning),stallEnabled:String(state.stallEnabled),vx:state.vx.toFixed(3),vz:state.vz.toFixed(3),slip:state.slip.toFixed(3),steer:state.steer.toFixed(3),wheelAngle:(state.wheelAngle||0).toFixed(5),shaftRpm:(state.shaftRPM||0).toFixed(1),engineTorque:(state.engineTorque||0).toFixed(1),clutchTorque:(state.clutchTorque||0).toFixed(1),wheelForce:(state.wheelForce||0).toFixed(1),roadResistance:(state.roadResistance||0).toFixed(1),enginePower:(state.enginePower||0).toFixed(1),clutchEngagement:(state.clutchEngagement||0).toFixed(3),throttle:(state.throttle||0).toFixed(3),pitch:state.pitch.toFixed(4),roll:state.roll.toFixed(4),signalSide:signal.side,signalOn:String(signalOn),signalArmed:String(signal.armed),lampLeft:vehicle?.userData.turnLights.get(1).emissiveIntensity||0,lampRight:vehicle?.userData.turnLights.get(-1).emissiveIntensity||0,wheelScale:vehicle?.userData.wheels[0].pivot.scale.toArray().join(',')||'1,1,1'});
+  updateDataset(highwayStats,{sceneObjects,gpuGeometries:renderer?.info.memory.geometries||0,gpuTextures:renderer?.info.memory.textures||0});
   const motorway=['highway','ramp','local'].includes(highway?.mode);document.body.classList.toggle('on-highway',motorway);const speedBox=$('speed').parentElement,slot=$('hud-speed-slot');if(speedBox.parentElement!==slot)slot.prepend(speedBox);
   $('junction-select').disabled=visit.walking||highwayStats.junctionSelectable!=='true';
   $('road-label').textContent=motorway?`${highwayStats.highwayRoadNumber||'S01'} / ${highwayStats.highwayLanes||6}车道 · ${highwayStats.highwayJunctionName||'存档高速'}`:(regionForIndex(townPose.index).kind==='crabbay'?'CRABBAY / ':'TOWN / ')+regionForIndex(townPose.index).name;
@@ -408,18 +437,19 @@ function updateUI(){
   $('monitor-score').textContent=`监控总分 ${highwayStats.monitorScore||0}`;
   const eventText=highwayStats.monitorEvents||'';if($('monitor-events').dataset.events!==eventText){$('monitor-events').dataset.events=eventText;$('monitor-events').replaceChildren(...(eventText?JSON.parse(eventText):[]).map(e=>node('li',`${e.label} ${e.points>0?'+':''}${e.points}${e.speed!==undefined?' · '+e.speed.toFixed(1)+' km/h':''}`)));}
   const context=mapContext();routeMap.draw(activePose(),context);worldMap.observe(activePose(),context);$('map-direction').textContent=context.navigation?.instruction||highwayStats.navigationInstruction||'沿当前道路继续行驶';$('map-mode').textContent=highway?.mode==='city'?'街区':'北朝上';
-  if(visit.walking){$('gear').textContent='步行';$('speed').textContent=(visit.walker.speed*3.6).toFixed(0).padStart(2,'0');$('rpm').textContent='车辆已驻车';$('steering-hint').textContent='WASD步行 · 鼠标观察 · F交互 · G上车';$('tank-view-status').textContent='步行观察';$('mouse-center').textContent='C · 视角回中';$('road-distance').textContent='步行探索'+visit.path.serviceName+' · G回到车内';$('road-exit').textContent='停车场 / 加油泵 / 休息室';$('camera-distance').textContent='当前步行区域无摄像头';$('map-direction').textContent='按小地图查看停车位置';}
+  if(visit.walking){$('gear').textContent='步行';$('speed').textContent=(visit.walker.speed*3.6).toFixed(0).padStart(2,'0');$('rpm').textContent='车辆已驻车';$('steering-hint').textContent='蒂诺 · WASD步行 / Shift跑步 · F交互 · G上车';$('tank-view-status').textContent='步行观察';$('mouse-center').textContent='C · 视角回中';$('road-distance').textContent='步行探索'+visit.path.serviceName+' · G回到车内';$('road-exit').textContent='停车场 / 加油泵 / 休息室';$('camera-distance').textContent='当前步行区域无摄像头';$('map-direction').textContent='按小地图查看停车位置';}
   $('space-help').textContent='手刹 + 弹跳';
   document.querySelector('[data-key="Space"]').setAttribute('aria-label','后轮手刹并弹跳');
 }
 function frame(time){
+  if(graphicsLost){lastTime=0;accumulator=0;requestAnimationFrame(frame);return;}
   const raw=lastTime?(time-lastTime)/1000:1/60,dt=Math.min(raw,.25);lastTime=time;
   if(started&&!simulationPaused()&&!document.hidden){frameAverage+=(raw-frameAverage)*.08;performanceWindow+=raw;if(performanceWindow>2&&frameAverage>.045&&renderScale>.55){renderScale=renderScale>.8?.75:.55;renderer.setPixelRatio(Math.min(devicePixelRatio,1.7)*renderScale);renderer.shadowMap.enabled=false;performanceWindow=0;}document.body.dataset.frameMs=(frameAverage*1000).toFixed(1);document.body.dataset.renderScale=renderScale;}
   stepRecovery(raw);
   if(!document.hidden&&simulationPaused()){renderer.render(scene,camera);try{showroom?.render();}catch(error){showroom?.close();toast('观车画面暂时中断，已返回原位置；可重新打开。');console.error('Showroom renderer:',error);}requestAnimationFrame(frame);return;}
   if(!document.hidden){
     elapsed+=dt;accumulator+=dt;
-    const baseInput={steer:activeCar!=='bt7'&&steeringMode==='mouse'?mouseSteer:0,forward:keys.has('KeyW')||keys.has('ArrowUp'),reverse:keys.has('KeyS')||keys.has('ArrowDown'),left:keys.has('KeyA')||keys.has('ArrowLeft'),right:keys.has('KeyD')||keys.has('ArrowRight'),handbrake:keys.has('Space'),clutch:keys.has('ControlLeft')||keys.has('ControlRight')};
+    const baseInput={steer:activeCar!=='bt7'&&steeringMode==='mouse'?mouseSteer:0,forward:keys.has('KeyW')||keys.has('ArrowUp'),reverse:keys.has('KeyS')||keys.has('ArrowDown'),left:keys.has('KeyA')||keys.has('ArrowLeft'),right:keys.has('KeyD')||keys.has('ArrowRight'),handbrake:keys.has('Space'),clutch:keys.has('ControlLeft')||keys.has('ControlRight'),sprint:visit.walking&&(keys.has('ShiftLeft')||keys.has('ShiftRight')||Math.hypot(touchStick.value.walkForward||0,touchStick.value.walkRight||0)>.85)};
     const input=composeTouchInput(baseInput,touchStick.value,keys,touchDirection,state,visit.walking);
     const wasRolled=state.rolled;
     while(accumulator>=1/120){if((!panel.open||visit.walking)&&started){visit.beforeStep(input,1/120,panel.open);highway.step(state,visit.walking?PARKED_INPUT:{...tankAssist.step(state,input),signalSide:signal.side},1/120,boxes);visit.afterStep();const shift=visit.walking?null:shiftBuffer.step(1/120,state,input.clutch);if(shift!==null){const result=shiftGear(state,shift);toast(result.reason);}}signalOn=stepSignals(signal,state.steer,state.speed,1/120);accumulator-=1/120;}
@@ -429,7 +459,7 @@ function frame(time){
     music.setActive(yarisMode!=='stopped');
     vehicle.userData.rollAngle+=state.speed*dt/(activeCar==='bt7'?.415:powertrainSpec(activeCar).tyreRadius);
     if(activeCar==='bt7'){const phase=vehicle.userData.trackPhases;vehicle.userData.updateTracks(phase.left+(state.speed-(state.yawRate||0)*.98)*dt,phase.right+(state.speed+(state.yawRate||0)*.98)*dt);}
-    syncVehicle();walkerModel.visible=visit.walking;if(visit.walking){walkerModel.position.set(visit.walker.x,visit.walker.y,visit.walker.z);walkerModel.rotation.y=visit.walker.heading;}highwayStats=highway.animate(state,dt,bounceClock,yarisMode!=='stopped',bounceMotionEnabled());syncSceneRoute(highway.mode,townPose);
+    syncVehicle();tinoCharacter.update(visit,dt,panel.open);highwayStats=highway.animate(state,dt,bounceClock,yarisMode!=='stopped',bounceMotionEnabled());syncSceneRoute(highway.mode,townPose);
     $('tunnel-fade').style.opacity=String(highwayStats.highwayFade);
     $('impact-flash').style.opacity=reduceMotion.matches?'0':String(+highwayStats.highwayImpact*.35);
     positionCamera(false,dt);updateTankTurret(dt);cameraOcclusion.update(camera,activePose(),dt);

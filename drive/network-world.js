@@ -47,19 +47,39 @@ export function createNetworkWorld(T,scene,{sign,initial={x:-14,z:19},buildQueue
  const chunks=[];const empty=Array.from({length:17},(_,i)=>({x:i*5,z:0,y:0,s:i*5}));
  const cubeGeo=new T.BoxGeometry(1,1,1);
  const outerRailAllowed=(id,s)=>!CONNECTORS.some(c=>c.auxiliary?.some(a=>a.roadId===id&&s>a.startS-3&&s<a.endS+3)||c.from===id&&s>c.startS-3&&s<(c.departureEndS??c.startS+200)+3||c.to===id&&s>(c.mergeStartS??c.joinS-200)-3&&s<c.joinS+3);
- for(const id of RENDER_MOTORWAYS)for(let k=0;k<10;k++){surfaceOwner=id;
+ for(const id of RENDER_MOTORWAYS)for(let k=0;k<10;k++){surfaceOwner=id;const group=new T.Group();group.userData.cameraRoadId=id;root.add(group);surfaceRoot=group;
   const members=[surface(empty,MAIN_WIDTH,asphalt,1),surface(empty,.17,yellow,-6.3,.245),surface(empty,.20,white,5.7,.245),surface(empty,.14,white,-1.875,.245),surface(empty,.14,white,1.875,.245),surface(empty,.14,white,5.625,.245),surface(empty,.75,bankMat,0,.12),surface(empty,1,bankMat,0,.12)];
-  const structures=new T.Group();root.add(structures);const banks=[bank(empty,id,-6.625,-1,true),bank(empty,id,8.625,1,true)];chunks.push({id,index:null,members,structures,banks});
- }
+  const structures=new T.Group();group.add(structures);const banks=[bank(empty,id,-6.625,-1,true),bank(empty,id,8.625,1,true)];chunks.push({id,index:null,members,structures,banks,group,visualBatches:new Map()});
+ }surfaceRoot=root;
+ // Merge only equal-material, equal-shadow-state visual surfaces within one
+ // existing 80m chunk. Collider source meshes stay intact under the same parent.
+ const refreshMainlineVisuals=c=>{
+  const groups=[['markings',c.members.slice(2,6),c.group],['banks',[...c.members.slice(6,8),...c.banks],c.group],...['steel-guardrail','concrete-barrier'].map(key=>[key,c.structures.children.filter(m=>m.userData.structureType===key),c.structures])];
+  for(const [key,sources,parent]of groups){if(!sources.length)continue;
+   let mesh=c.visualBatches.get(key);const count=sources.reduce((n,m)=>n+m.geometry.attributes.position.count,0);
+   if(!mesh){mesh=new T.Mesh(new T.BufferGeometry(),sources[0].material);mesh.castShadow=sources[0].castShadow;mesh.receiveShadow=sources[0].receiveShadow;mesh.userData.mainlineVisualBatch=key;mesh.userData.cameraOccluderRole=sources[0].userData.cameraOccluderRole;parent.add(mesh);c.visualBatches.set(key,mesh);}
+   if(mesh.geometry.attributes.position?.count!==count){mesh.geometry.dispose();mesh.geometry=new T.BufferGeometry();mesh.geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(count*3),3));mesh.geometry.setAttribute('normal',new T.BufferAttribute(new Float32Array(count*3),3));}
+   const position=mesh.geometry.attributes.position,normal=mesh.geometry.attributes.normal;let at=0;
+   for(const source of sources){position.array.set(source.geometry.attributes.position.array,at);normal.array.set(source.geometry.attributes.normal.array,at);at+=source.geometry.attributes.position.array.length;source.visible=false;if(source.userData.driveCollider)source.userData.collisionOnly=true;}
+   position.needsUpdate=normal.needsUpdate=true;mesh.geometry.computeBoundingBox();mesh.geometry.computeBoundingSphere();mesh.userData.cameraRoadId=c.id;
+   // Keep the original objects as fade-selection proxies. Any active fade
+   // restores the entire original group, including still-opaque neighbours,
+   // so transparent ordering/depth behavior is identical to the unbatched scene.
+   mesh.userData.cameraOcclusion=false;
+   if(sources[0].userData.cameraOccluderRole){const sync=()=>{const fading=sources.some(m=>m.userData.cameraFadeOriginalMaterial);mesh.visible=!fading;for(const source of sources)source.visible=fading;};for(const source of sources){source.userData.cameraOcclusionProxy=true;source.userData.cameraFadeSync=sync;}sync();}
+
+  }
+  c.group.userData.cameraRoadId=c.id;
+ };
  const updateChunk=(c,index)=>{
   const section=roadSection(c.id),half=section.half;const permitted=p=>true;const points=Array.from({length:17},(_,i)=>mainPoint(c.id,index*80+i*5));
   const specs=[[section.width,section.centre,.22], [.17,-half-.15,.245],[.20,half+.075,.245],[.14,-half+3.75,.245],[.14,-half+7.5,.245],[.14,-half+11.25,.245],[.75,section.outer+.375,.12],[1,section.inner-.5,.12]];
   c.structures.userData.cameraRoadId=c.id;c.members.forEach((m,i)=>{m.userData.cameraRoadId=c.id;const[w,o,l]=specs[i],dash=i===3?1:i===4?2:i===5?3:0,filter=dash?p=>dash<section.lanes&&((p.s%15)+15)%15<6:i===2?p=>outerRailAllowed(c.id,p.s)||((p.s%15)+15)%15<6:()=>true,a=ribbon(points,w,o,l,0,filter,i>=2&&i<=5);if(m.geometry.attributes.position.array.length!==a.length){const old=m.geometry;m.geometry=new T.BufferGeometry();m.geometry.setAttribute('position',new T.BufferAttribute(a,3));old.dispose();}else m.geometry.attributes.position.array.set(a);m.geometry.attributes.position.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingSphere();m.geometry.computeBoundingBox();});
-  for(const m of [...c.structures.children]){m.geometry?.dispose();c.structures.remove(m);}const sp=structuralPoints(points);
+  for(const m of [...c.structures.children]){m.geometry?.dispose();c.structures.remove(m);}c.visualBatches.delete('steel-guardrail');c.visualBatches.delete('concrete-barrier');const sp=structuralPoints(points);
   for(const side of [-1,1]){const edge=side<0?section.inner-.28:section.outer+.28,mask=p=>!networkInternalBoundary(c.id,p.x-Math.cos(p.heading)*edge,p.z+Math.sin(p.heading)*edge,p.y);c.structures.add(...structure.barriers(sp,edge,{mask,bridgeWeight:weight}));}
   c.structures.add(structure.deck(sp,section.width,section.centre),...structure.supports(sp,section.width,{groundHeight:terrainHeight,clear:supportClear,bridgeWeight:weight}));
   c.banks.forEach((m,i)=>{const a=bankVertices(sp,c.id,i?section.outer+.75:section.inner,i?1:-1);m.geometry.attributes.position.array.set(a);m.geometry.attributes.position.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingSphere();m.geometry.computeBoundingBox();});
-  c.index=index;c.prewarmRevision=null;
+  refreshMainlineVisuals(c);c.index=index;c.prewarmRevision=null;
  };
  // All eight connectors are continuous, fixed meshes. Their start/end lanes
  // exactly match directed mainline coordinates; no road-side transport trigger.
@@ -160,7 +180,7 @@ const pavementMemo=new WeakMap(),pavementBounds=(p,i)=>{if(pavementMemo.has(p))r
     if(buildQueue){const available=stale.filter(c=>!c.warm);for(const idx of wanted)if(!pool.some(c=>c.index===idx||c.warm?.index===idx)){const c=available.pop();if(c)warmChunk(c,id,idx);}}
     else {let budget=2;for(const idx of wanted)if(!pool.some(c=>c.index===idx)&&budget-->0){const c=stale.pop();if(c.index!==null)recycled++;updateChunk(c,idx);c.prewarmRevision=networkRevision();physicsRevision++;}}
    }else for(const c of pool)cancelWarm(c);
-   pool.forEach(c=>[...c.members,...c.banks,c.structures].forEach(m=>m.visible=false));continue;
+   pool.forEach(c=>c.group.visible=false);continue;
   }
   for(const c of pool)cancelWarm(c);
    // Local exits can arrive after an invisible segment was prepared. Its
@@ -169,7 +189,7 @@ const pavementMemo=new WeakMap(),pavementBounds=(p,i)=>{if(pavementMemo.has(p))r
    for(const c of pool)if(wanted.includes(c.index)&&c.prewarmRevision!==null&&c.prewarmRevision!==undefined){if(c.prewarmRevision!==networkRevision()){updateChunk(c,c.index);physicsRevision++;}c.prewarmRevision=null;}
    for(const idx of wanted)if(!pool.some(c=>c.index===idx)){const c=stale.pop();if(c.index!==null)recycled++;updateChunk(c,idx);}
    // Remote perpendicular corridor remains pooled but need not cast shadows.
-   const visible=needed;pool.forEach(c=>[...c.members,...c.banks,c.structures].forEach(m=>m.visible=visible));
+   const visible=needed;pool.forEach(c=>c.group.visible=visible);
   }
   const cx=Math.floor(s.x/size),cz=Math.floor(s.z/size),area=cx+','+cz,wanted=[];if(area!==lastTerrainArea){for(const t of terrain)if(t.targetKey)cancelTerrain(t);lastTerrainArea=area;}for(let z=-2;z<=2;z++)for(let x=-2;x<=2;x++)wanted.push([cx+x,cz+z]);const keys=new Set(wanted.map(p=>p.join(',')));
   for(const t of terrain)if(t.targetKey&&!keys.has(t.targetKey))cancelTerrain(t);

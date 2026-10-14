@@ -1,5 +1,5 @@
 export const drivingCode=e=>e.code||(e.key==='Control'?(e.location===2?'ControlRight':'ControlLeft'):'');
-export const DRIVING_KEYS=new Set(['ControlLeft','ControlRight','KeyW','KeyA','KeyS','KeyD','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight']);
+export const DRIVING_KEYS=new Set(['ShiftLeft','ShiftRight','ControlLeft','ControlRight','KeyW','KeyA','KeyS','KeyD','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight']);
 // Physical keyboard state is separate from pointer/touch buttons. Clearing a
 // menu must not let held-key autorepeat restart the car, or lock out a future
 // keyboard press because a touch pointer was released while the menu was open.
