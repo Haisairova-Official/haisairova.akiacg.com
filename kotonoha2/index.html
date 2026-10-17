@@ -139,7 +139,8 @@
     <script type="module" crossorigin src="./assets/index-CBHXqrHH.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-D9ZoHTW-.css">
     <link id="kotonoha-ui-styles" rel="stylesheet" href="./game/userStyleSheet.css?v=text-layout-r12">
-  </head>
+  <style id="release-ui-cleanup">#koto-sound-check{display:none!important}</style>
+</head>
   <body>
     <!-- 背景模糊 -->
     <div id="ebg" class="html-body__effect-background">
@@ -439,8 +440,8 @@
       })();
     </script>
     <!-- main文件 -->
-  <details id="koto-copyright"><summary>原作官网版权声明</summary><div><p>非官方同人 sample，与 SEGA 无运营或授权背书关系。</p><p>以下为原作官网声明的引用，非本项目运营或隐私承诺，也不构成本项目的授权证明。</p><p>この物語はフィクションです。登場する人物・団体・名称等は架空であり、実在のものとは関係ありません。</p><p>©SEGA<br>「言ノ葉プロジェクト」公式Webサイトは、<a href="https://www.segafave.co.jp/" target="_blank" rel="noopener">株式会社セガ フェイブ</a>が運営しております。<a href="https://sega.jp/contact/arcade/" target="_blank" rel="noopener">【お問い合わせはこちら】</a><br>本サイトで使用されている画像、文章、情報、音声、動画、等は株式会社セガの著作権により保護されております。<br>著作権者の許可無く、複製、転載などの行為を禁止いたします。<br>個人情報の取り扱いについては<a href="https://www.segafave.co.jp/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a>を参照下さい。</p><p>VOCALOIDはヤマハ株式会社の登録商標です。</p><p>WebGAL 4.6.6 · <a href="./licenses/WebGAL-MPL-2.0.txt" target="_blank" rel="noopener">MPL-2.0</a> · <a href="./source-webgal.zip">引擎源码</a></p></div></details>
-<style>#koto-copyright{position:fixed;right:12px;top:12px;z-index:1000;width:250px;max-width:calc(100vw - 24px);font:13px/1.65 system-ui,sans-serif;color:#eee3ca;background:#151c26ed;border:1px solid #a88952;border-radius:8px;box-shadow:0 4px 20px #0008}#koto-copyright summary{padding:10px 12px;cursor:pointer;font-weight:bold}#koto-copyright>div{padding:0 14px 10px;max-height:65vh;overflow:auto}#koto-copyright a{color:#efc983}@media(max-width:600px){#koto-copyright{font-size:12px;width:230px;top:6px;right:6px}}</style>
+  
+
 <script>document.addEventListener('play',e=>{if(e.target instanceof HTMLAudioElement && e.target.src.includes('/game/bgm/'))e.target.loop=false;},true);</script>
 <button id="koto-skip-op" type="button" hidden>跳过视频 · Esc</button>
 <style>#koto-skip-op{position:fixed;right:18px;bottom:24px;z-index:2000;padding:12px 18px;border:1px solid #f6df9b;border-radius:6px;background:#151c26df;color:#fff6e1;font:16px system-ui;cursor:pointer}#koto-skip-op[hidden]{display:none}</style>
