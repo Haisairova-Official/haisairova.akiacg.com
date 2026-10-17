@@ -1,0 +1,18 @@
+{
+  "character": "Ralph / ラルフ",
+  "identity_in_this_scene": "Confirmed by user; spoken display names and story text remain unchanged.",
+  "height_cm": 183.5,
+  "source_url": "https://maimai.sega.jp/kotonoha/storage/character/ralph/illust_sp.png",
+  "source_sha256": "e08665c88a73cee8a9a7bf4a3f87133dd133a74ed605929efdf5cfa3c84ca5e8",
+  "alpha_bbox": [
+    124,
+    1,
+    595,
+    2030
+  ],
+  "stage_edit": "Lossless crop to alpha bounding box; source RGBA pixels retained.",
+  "portrait_edit": "Upper 55 percent of alpha-cropped image; existing portrait fade CSS applies.",
+  "first_label": 150,
+  "exit_label": 159,
+  "pixel_per_cm": 8.2
+}

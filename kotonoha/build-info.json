@@ -1,9 +1,11 @@
 {
-  "revision": "20261017-1557-r9",
-  "built_utc": "2026-10-17T15:55:27.239318+00:00",
+  "revision": "scene-audio-r10",
+  "built_utc": "2026-10-17T16:19:36.877598+00:00",
   "engine": "official WebGAL 4.6.6",
   "target_url": "https://haisairova.akiacg.com/kotonoha/",
   "published": true,
-  "validation": "Static resource and media checks passed; final visual and interactive acceptance incomplete.",
-  "ui_revision": "text-color-v2"
+  "validation": "Static route, resource, audio decode and peak checks; final visual and listening acceptance incomplete.",
+  "ui_revision": "text-color-v2",
+  "scene_revision": "r10",
+  "audio_revision": "sfx10"
 }

@@ -856,7 +856,7 @@ label:KOTO-C1-1-l_165;
 setVar:koto_id=KOTO-C1-1-l_165;
 setVar:koto_speaker=anastasia;
 アナスタシア:「お話？」;
-bgm:B_sample.mp3 -volume=30 -enter=1500 -next;
+bgm:none -next;
 miniAvatar:nick.png -next;
 label:KOTO-C1-1-l_166;
 setVar:koto_id=KOTO-C1-1-l_166;

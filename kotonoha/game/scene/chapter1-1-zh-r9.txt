@@ -1164,7 +1164,7 @@ setTransform:{"position":{"x":768,"y":440.54999999999984},"scale":{"x":0.9367361
 setVar:koto_id=KOTO-C1-1-l_165;
 setVar:koto_speaker=anastasia;
 阿纳斯塔西娅:「故事？」;
-bgm:B_sample.mp3 -volume=30 -enter=1500 -next;
+bgm:none -next;
 miniAvatar:nick.png -next;
 label:KOTO-C1-1-l_166;
 setTransform:{"position":{"x":-512,"y":397.4999999999999},"scale":{"x":0.9965277777777776,"y":0.9965277777777776},"alpha":1} -target=cast_owl -duration=0 -next;

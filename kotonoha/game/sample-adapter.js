@@ -1,3 +1,21 @@
+// Temporarily silence track B, including B restored by an existing save or history jump.
+// Preserve the engine state and original audio file so the track can be enabled again later.
+(()=>{
+  const suppressB=e=>{
+    const a=e.target;
+    if(!(a instanceof HTMLAudioElement))return;
+    const src=a.getAttribute('src')||a.currentSrc;
+    if(!src)return;
+    let path;try{path=new URL(src,document.baseURI).pathname;}catch{return;}
+    if(!path.endsWith('/game/bgm/B_sample.mp3'))return;
+    a.pause();
+    a.removeAttribute('src');
+    a.load();
+  };
+  document.addEventListener('loadstart',suppressB,true);
+  document.addEventListener('play',suppressB,true);
+})();
+
 // Thin DOM adapter: WebGAL remains responsible for video playback and scene progression.
 (()=>{const b=document.getElementById('koto-skip-op');let v;
 const find=()=>{v=document.getElementById('playVideoElement');b.hidden=!v;if(v){v.playsInline=true;v.setAttribute('playsinline','');}};
