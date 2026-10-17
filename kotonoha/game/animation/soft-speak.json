@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "keyframes": [
+    {
+      "time": 0,
+      "position": {
+        "y": 0
+      }
+    },
+    {
+      "time": 260,
+      "position": {
+        "y": -4
+      }
+    },
+    {
+      "time": 720,
+      "position": {
+        "y": 0
+      }
+    }
+  ],
+  "relative": true,
+  "relativeCalc": {}
+}

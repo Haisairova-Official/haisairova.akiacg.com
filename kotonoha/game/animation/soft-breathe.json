@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "keyframes": [
+    {
+      "time": 0,
+      "position": {
+        "y": 0
+      }
+    },
+    {
+      "time": 3000,
+      "position": {
+        "y": -3
+      }
+    },
+    {
+      "time": 6000,
+      "position": {
+        "y": 0
+      }
+    },
+    {
+      "time": 9000,
+      "position": {
+        "y": -3
+      }
+    },
+    {
+      "time": 12000,
+      "position": {
+        "y": 0
+      }
+    }
+  ],
+  "relative": true,
+  "relativeCalc": {}
+}

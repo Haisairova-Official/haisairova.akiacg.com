@@ -1,0 +1,8 @@
+Game_name:言ノ葉 · 雾雨中的委托 / Chapter1-1;
+Game_key:kotonoha-c1-1-sample-20261017-r9;
+Title_img:Entry.jpg;
+Title_bgm:none;
+Game_Logo:none;
+Enable_Appreciation:false;
+Enable_Continue:true;
+Enable_flowchart:false;

@@ -1,0 +1,32 @@
+/* Project UI only; official engine assets remain unchanged. */
+html,body{overflow:hidden!important;overscroll-behavior:none;}
+body{position:fixed;inset:0;}
+#root{position:fixed;left:0;top:0;}
+#textBoxMain {left:25px!important;right:25px!important;border-radius:14px!important;min-height:330px!important;}
+#textBoxMain [class*="_zhanwei_"] {color:transparent!important;}
+#textBoxMain [class*="_zhanwei_"]>span:first-child {color:transparent!important;-webkit-text-stroke:0!important;text-shadow:none!important;}
+#textBoxMain [class*="_zhanwei_"]>span:last-child {color:#fff6e1!important;-webkit-text-stroke:0!important;text-shadow:0 2px 4px #000!important;}
+#miniAvatar{display:none!important;}
+#speaker-portrait{position:absolute;left:32px;top:24px;width:300px;height:390px;z-index:8;overflow:hidden;pointer-events:none;mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 100%);filter:drop-shadow(0 4px 7px #0005);}
+#speaker-portrait img{position:static;display:block;width:100%;height:auto;max-width:none;max-height:none;object-position:center top;}
+#speaker-portrait[hidden]{display:none;}
+@media(prefers-reduced-motion:reduce){#speaker-portrait{animation:none!important;}}
+
+/* Speaker portrait sits behind the translucent dialogue panel, never in the stage cast. */
+#speaker-portrait{left:46px;top:auto;bottom:32px;width:380px;height:540px;z-index:5;mask-image:linear-gradient(to bottom,#000 0%,#000 77%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 77%,transparent 100%);}
+#speaker-portrait img{position:static!important;width:100%!important;height:auto!important;object-fit:contain;}
+#textBoxMain{background:rgba(10,13,21,.73)!important;left:32px!important;right:32px!important;width:calc(100% - 64px)!important;padding:24px 56px 70px 430px!important;box-sizing:border-box!important;z-index:6!important;align-items:flex-start!important;}
+#textBoxMain [class*="_text_"]{width:100%!important;min-width:0!important;box-sizing:border-box!important;}
+
+/* r6: portrait and dialogue are siblings inside one stacking context. */
+[class*="_TextBox_Background_"]{display:none!important;}
+#textBoxMain{overflow:visible!important;background:transparent!important;isolation:isolate;padding-left:550px!important;}
+#textBoxMain::before{content:"";position:absolute;inset:0;background:rgba(10,13,21,.73);border-radius:14px;z-index:1;pointer-events:none;}
+#textBoxMain>*{z-index:2;}
+#textBoxMain>[class*="_text_"]{position:relative;z-index:2;}
+#textBoxMain #speaker-portrait{position:absolute!important;left:0!important;top:-340px!important;bottom:auto!important;width:532px!important;height:720px!important;z-index:0!important;mask-image:linear-gradient(to bottom,#000 0%,#000 60%,transparent 100%)!important;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 60%,transparent 100%)!important;}
+#textBoxMain [class*="nameContainer"],#textBoxMain [class*="showName"]{left:550px!important;z-index:3!important;}
+
+/* r8: fade the actual cropped portrait, not an oversized empty container. */
+#textBoxMain #speaker-portrait{height:auto!important;mask-image:none!important;-webkit-mask-image:none!important;}
+#textBoxMain #speaker-portrait img{mask-image:linear-gradient(to bottom,#000 0%,#000 48%,rgba(0,0,0,.75) 66%,transparent 100%)!important;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 48%,rgba(0,0,0,.75) 66%,transparent 100%)!important;}
