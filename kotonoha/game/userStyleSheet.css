@@ -10,10 +10,15 @@ body{position:fixed;inset:0;}
   background:none!important;
   background-clip:border-box!important;
   -webkit-background-clip:border-box!important;
-  color:#fff6e1!important;
-  -webkit-text-fill-color:#fff6e1!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
   -webkit-text-stroke:0!important;
   text-shadow:0 2px 4px #000!important;
+}
+/* The engine adds readTextOuter to the same foreground span for read dialogue. */
+#textBoxMain [class*="_outer_"][class*="_readTextOuter_"] {
+  color:#b8ddff!important;
+  -webkit-text-fill-color:#b8ddff!important;
 }
 #textBoxMain [class*="_inner_"],
 #textBoxMain [class*="_innerName_"] {visibility:hidden!important;}

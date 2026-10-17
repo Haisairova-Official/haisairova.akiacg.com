@@ -4,5 +4,6 @@
   "engine": "official WebGAL 4.6.6",
   "target_url": "https://haisairova.akiacg.com/kotonoha/",
   "published": true,
-  "validation": "Static resource and media checks passed; final visual and interactive acceptance incomplete."
+  "validation": "Static resource and media checks passed; final visual and interactive acceptance incomplete.",
+  "ui_revision": "text-color-v2"
 }
