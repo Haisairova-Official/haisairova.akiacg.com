@@ -3387,7 +3387,7 @@ miniAvatar:none -next;
 label:KOTO-C1-6-l_601;
 setVar:koto_id=KOTO-C1-6-l_601;
 setVar:koto_speaker=hyde_lou;
-休特·鲁:「没想到她才是烧瓶……」;
+休特·鲁:「没想到她就是那个[容器](Flask)……」;
 miniAvatar:none -next;
 label:KOTO-C1-6-l_602;
 setVar:koto_id=KOTO-C1-6-l_602;
