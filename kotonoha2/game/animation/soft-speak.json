@@ -1,0 +1,1 @@
+{"version": 2, "relative": true, "relativeCalc": {"rotation": "add"}, "keyframes": [{"time": 0, "rotation": 0}, {"time": 220, "rotation": -0.004, "ease": "easeInOut"}, {"time": 650, "rotation": 0, "ease": "easeInOut"}]}

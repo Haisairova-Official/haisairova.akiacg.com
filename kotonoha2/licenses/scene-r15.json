@@ -1,0 +1,16 @@
+{
+  "source": "User-provided Japanese Chapter1-4 l_2-l_3; Chapter1-5 l_5,l_9,l_13,l_169-l_216; Chapter1-6 l_85,l_94,l_117-l_219",
+  "backgrounds": {
+    "day": "bd4e4857-965b-4bce-8a44-0a09e3c96260",
+    "night": "48dd8d9b-e641-49e8-8329-39d6818de06d",
+    "dark": "a2d283d6-e323-4771-a012-983686e3ed3b",
+    "candle": "a4b748e7-7d77-4168-89d9-3a0023a34941",
+    "fire": "8840f417-4fd8-4921-aea4-e8f51b58b08a",
+    "burned": "be488c4f-1a93-448d-b504-9f606fef7286"
+  },
+  "guard_references": [
+    "https://maimai.sega.jp/kotonoha/character/assets/chara_list_bg.png?20260403",
+    "original cg_1-6-2.jpg"
+  ],
+  "notice": "Generated scene reconstructions and reconstructed guard full-body, not official original illustrations. Day visit and night auction separated. Guard suspicion label begins at direct questioning l_117, identity at l_219."
+}

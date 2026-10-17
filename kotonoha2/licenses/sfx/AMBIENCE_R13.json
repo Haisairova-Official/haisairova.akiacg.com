@@ -1,0 +1,29 @@
+[
+  {
+    "asset": "amb_pub.mp3 / amb_crowd.mp3",
+    "source": "https://freesound.org/people/16H_Panska_Stejskal_David/sounds/498533/",
+    "author": "16H_Panska_Stejskal_David",
+    "license": "CC0 1.0",
+    "download": "public HQ preview MP3",
+    "edits": "24-second excerpt, EQ, dynamics and fades. Crowd variant adds hall echo."
+  },
+  {
+    "asset": "amb_rain.mp3 / amb_rain_room.mp3 / amb_aftermath.mp3",
+    "source": "See existing licenses/sfx/SOURCES_AND_LICENSES.json rain_window_loop.ogg",
+    "license": "CC0 1.0",
+    "edits": "EQ, dynamics and fades; aftermath is an attenuated water-texture design, not an authentic fire-scene recording."
+  },
+  {
+    "asset": "amb_room.mp3 / amb_night.mp3",
+    "source": "Procedural filtered pink noise; no third-party recording",
+    "edits": "Low-frequency room/air beds; no music."
+  },
+  {
+    "asset": "amb_fire.mp3",
+    "source": "https://freesound.org/people/HenKonen/sounds/797669/",
+    "author": "HenKonen",
+    "license": "CC0 1.0",
+    "download": "Public HQ preview MP3",
+    "edits": "24 seconds from15s; EQ, loudness, fades"
+  }
+]

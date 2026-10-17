@@ -1,0 +1,27 @@
+{
+  "version": "chapter-one-r17-test",
+  "chapters": [
+    "1-1",
+    "1-2",
+    "1-3",
+    "1-4",
+    "1-5",
+    "1-6",
+    "1-7"
+  ],
+  "status": "test-build-awaiting-mobile-verification",
+  "original_paragraphs": 1869,
+  "languages": [
+    "zh",
+    "ja"
+  ],
+  "preload": "chapter-entry-all-assets",
+  "last_chapter": "1-7",
+  "changes": [
+    "r15 auction day/night/blackout/fire and guard disguise",
+    "ED restored after Chapter1-7 before save page",
+    "media failure recovery and explicit sound test button",
+    "29 calibrated audio assets"
+  ],
+  "target_url": "https://haisairova.akiacg.com/kotonoha2/"
+}

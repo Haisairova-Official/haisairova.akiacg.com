@@ -1,0 +1,8 @@
+Game_name:言ノ葉 · 分解探偵アウル / Chapter1;
+Game_key:kotonoha-private-r11;
+Title_img:Entry.jpg;
+Title_bgm:none;
+Game_Logo:none;
+Enable_Appreciation:false;
+Enable_Continue:true;
+Enable_flowchart:false;

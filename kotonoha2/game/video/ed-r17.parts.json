@@ -1,0 +1,55 @@
+{
+  "mime": "video/mp4",
+  "size": 24514294,
+  "sha256": "b17d92b914ce48591ca85c6ee9335f187285ad05c9f9077a5d237e0bf1a7859c",
+  "parts": [
+    {
+      "file": "ed-r17-part-00.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-01.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-02.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-03.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-04.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-05.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-06.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-07.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-08.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-09.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-10.bin",
+      "size": 2097152
+    },
+    {
+      "file": "ed-r17-part-11.bin",
+      "size": 1445622
+    }
+  ]
+}

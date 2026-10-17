@@ -1,0 +1,57 @@
+{
+  "official_character_sources": [
+    {
+      "id": "hudelou",
+      "url": "https://maimai.sega.jp/kotonoha/storage/character/hudelou/illust_sp.png",
+      "size": 909168,
+      "sha256": "a23e64c514f39b81b294fcd0c2790da557712ecb0b618507d35f1bfc32215aea"
+    },
+    {
+      "id": "ellie",
+      "url": "https://maimai.sega.jp/kotonoha/storage/character/ellie/illust_sp.png",
+      "size": 180567,
+      "sha256": "29499877f5ee322a3e52b679d24815609b176bff06fbfb541f2494415539cc76"
+    },
+    {
+      "id": "clemens",
+      "url": "https://maimai.sega.jp/kotonoha/storage/character/clemens/illust_sp.png",
+      "size": 670425,
+      "sha256": "d23451d63c152d4b297f7c5e519017679e13ee598e12ba676dd5a4fb77cb866b"
+    },
+    {
+      "id": "mastema",
+      "url": "https://maimai.sega.jp/kotonoha/storage/character/mastema/illust_sp.png",
+      "size": 207597,
+      "sha256": "3350cbd25d5930a915679f919a7dc445442ae151620c07223b1ef0ccaf056e7f"
+    },
+    {
+      "id": "nick_devil",
+      "url": "https://maimai.sega.jp/kotonoha/storage/character/nick/illust_sp_devil.png",
+      "size": 1057108,
+      "sha256": "c918fb9cff2856b25f533ffd6d20a43182e581591e1c6a23e49eb02f8a146d48"
+    }
+  ],
+  "original_CG": "User-provided official chapter images, unchanged",
+  "generated_backgrounds": [
+    "bg_auction.png",
+    "bg_director.png",
+    "bg_courtyard.png",
+    "bg_museum_lobby.png",
+    "bg_collection.png",
+    "bg_security.png",
+    "bg_auction_burned.png",
+    "bg_museum_night.png"
+  ],
+  "generated_support_figures": [
+    "police",
+    "auctioneer",
+    "sean"
+  ],
+  "inferred_layout_heights_cm": {
+    "hyde_lou": 178,
+    "police": 178,
+    "auctioneer": 178,
+    "sean": 158
+  },
+  "note": "Support figures and missing backgrounds are AI generated, not official designs. Character height estimates are staging parameters only. Official illustrations remain \u00a9SEGA."
+}

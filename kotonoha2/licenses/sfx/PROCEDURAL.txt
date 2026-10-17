@@ -1,0 +1,1 @@
+sfx11_* are deterministic procedural synthesis, not third-party recordings. Source code included. No external sound samples used. Existing sfx10_* source licenses remain in R10_SOURCES_AND_EDITS.json.

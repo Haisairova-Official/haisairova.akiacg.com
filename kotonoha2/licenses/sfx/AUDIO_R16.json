@@ -1,0 +1,147 @@
+[
+  {
+    "file": "sfx11_shot_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_fire_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_door_close_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_door_open_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_magic_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_whistle_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_aftermath_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_rain_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_steps_wood_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_night_r16.mp3",
+    "target_lufs": -25,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_crowd_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_rain_room_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_paper_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_water_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_impact_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_rain_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_room_r16.mp3",
+    "target_lufs": -25,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_pub_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "amb_fire_r16.mp3",
+    "target_lufs": -22,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_steps_stone_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_clock_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_cup_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_bell_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_cloth_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx11_glass_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_knock_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "sfx10_stairs_r16.mp3",
+    "target_lufs": -20,
+    "true_peak_db": -2
+  },
+  {
+    "file": "B_auction_r16.mp3",
+    "target_lufs": -18,
+    "true_peak_db": -2
+  },
+  {
+    "file": "A_sample_r16.mp3",
+    "target_lufs": -18,
+    "true_peak_db": -2
+  }
+]
