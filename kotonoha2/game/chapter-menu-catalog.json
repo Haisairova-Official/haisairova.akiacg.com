@@ -1,0 +1,107 @@
+{
+  "chapters": [
+    {
+      "number": 1,
+      "label": "第一章",
+      "sections": [
+        {
+          "number": 1,
+          "routes": {
+            "zh": "chapter1-1-zh-r11.txt",
+            "ja": "chapter1-1-ja-r11.txt"
+          }
+        },
+        {
+          "number": 2,
+          "routes": {
+            "zh": "chapter1-2-zh-r11.txt",
+            "ja": "chapter1-2-ja-r11.txt"
+          }
+        },
+        {
+          "number": 3,
+          "routes": {
+            "zh": "chapter1-3-zh-r11.txt",
+            "ja": "chapter1-3-ja-r11.txt"
+          }
+        },
+        {
+          "number": 4,
+          "routes": {
+            "zh": "chapter1-4-zh-r11.txt",
+            "ja": "chapter1-4-ja-r11.txt"
+          }
+        },
+        {
+          "number": 5,
+          "routes": {
+            "zh": "chapter1-5-zh-r11.txt",
+            "ja": "chapter1-5-ja-r11.txt"
+          }
+        },
+        {
+          "number": 6,
+          "routes": {
+            "zh": "chapter1-6-zh-r11.txt",
+            "ja": "chapter1-6-ja-r11.txt"
+          }
+        },
+        {
+          "number": 7,
+          "routes": {
+            "zh": "chapter1-7-zh-r11.txt",
+            "ja": "chapter1-7-ja-r11.txt"
+          }
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "label": "第二章",
+      "sections": [
+        {
+          "number": 1,
+          "routes": {
+            "zh": "chapter2-1-zh-c2.txt",
+            "ja": "chapter2-1-ja-c2.txt"
+          }
+        },
+        {
+          "number": 2,
+          "routes": {
+            "zh": "chapter2-2-zh-c2.txt",
+            "ja": "chapter2-2-ja-c2.txt"
+          }
+        },
+        {
+          "number": 3,
+          "routes": {
+            "zh": "chapter2-3-zh-c2.txt",
+            "ja": "chapter2-3-ja-c2.txt"
+          }
+        },
+        {
+          "number": 4,
+          "routes": {
+            "zh": "chapter2-4-zh-c2.txt",
+            "ja": "chapter2-4-ja-c2.txt"
+          }
+        },
+        {
+          "number": 5,
+          "routes": {
+            "zh": "chapter2-5-zh-c2.txt",
+            "ja": "chapter2-5-ja-c2.txt"
+          }
+        },
+        {
+          "number": 6,
+          "routes": {
+            "zh": "chapter2-6-zh-c2.txt",
+            "ja": "chapter2-6-ja-c2.txt"
+          }
+        }
+      ]
+    }
+  ]
+}

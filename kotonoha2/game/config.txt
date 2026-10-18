@@ -1,5 +1,5 @@
-Game_name:言ノ葉 · 分解探偵アウル / Chapter1;
-Game_key:kotonoha-private-r11;
+Game_name:言ノ葉 · 分解探偵アウル / Chapter2;
+Game_key:kotonoha-chapter2-local-20261018;
 Title_img:Entry.jpg;
 Title_bgm:none;
 Game_Logo:none;

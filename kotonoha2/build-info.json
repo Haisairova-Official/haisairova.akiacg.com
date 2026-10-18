@@ -1,27 +1,26 @@
 {
-  "version": "chapter-one-r18-battle-bgm",
+  "version": "chapter2-local-20261018-v12-monster-behind-cast",
+  "base_commit": "ecdda75cf76c6ca9bed11b720131828bbcc8f092",
   "chapters": [
-    "1-1",
-    "1-2",
-    "1-3",
-    "1-4",
-    "1-5",
-    "1-6",
-    "1-7"
+    "2-1",
+    "2-2",
+    "2-3",
+    "2-4",
+    "2-5",
+    "2-6"
   ],
-  "status": "test-build-awaiting-mobile-verification",
-  "original_paragraphs": 1869,
-  "languages": [
-    "zh",
-    "ja"
-  ],
-  "preload": "chapter-entry-all-assets",
-  "last_chapter": "1-7",
-  "changes": [
-    "r15 auction day/night/blackout/fire and guard disguise",
-    "ED restored after Chapter1-7 before save page",
-    "media failure recovery and explicit sound test button",
-    "29 calibrated audio assets"
-  ],
-  "target_url": "https://haisairova.akiacg.com/kotonoha2/"
+  "paragraphs": 1819,
+  "original_chapter1_routes_preserved": true,
+  "ed_sequence": "2-5 -> ED -> 2-6",
+  "published": false,
+  "validation": "pending browser regression",
+  "active_bundle": "index-c4b887113039.js",
+  "first_chapter_ed": "Native MP4 reconstructed with complete size and SHA256 validation",
+  "ellie_shared": "ellie_shared.png",
+  "all_role_audit": "26 scripts / 22 sprite role IDs / 5 cross-chapter shared roles",
+  "first_chapter_ed_validation": "LAN playing, skip and actual natural completion271.069s passed",
+  "negative_cache_recovery": "Cached non-2xx response re-fetched with cache reload, still blocks on actual failure",
+  "firewall_source_library_id": "libfile_df6f8f6a07b48191abdeedabe66bae07",
+  "visual_regression": "Actual Chapter2-5 stage verified; anchor/CG-state/preload audits pass",
+  "corridor": "Original A1 sign retained by explicit user instruction"
 }

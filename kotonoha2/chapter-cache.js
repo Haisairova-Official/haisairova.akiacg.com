@@ -1,4 +1,4 @@
-const CACHE='kotonoha-r13-chapter-media-v1';
+const CACHE='kotonoha-c2-local-media-v12-monster-behind-cast';
 self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',e=>{
@@ -17,3 +17,4 @@ self.addEventListener('fetch',e=>{
   return new Response(b.slice(start,end+1),{status:206,headers:{'Content-Type':r.headers.get('Content-Type')||'application/octet-stream','Content-Range':`bytes ${start}-${end}/${len}`,'Content-Length':String(end-start+1),'Accept-Ranges':'bytes'}});
  })());
 });
+
