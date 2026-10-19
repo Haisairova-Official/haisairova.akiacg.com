@@ -136,11 +136,12 @@
       }
 
     </style>
-    <script type="module" crossorigin src="./assets/index-88949152eaf5.js"></script>
+    <script type="module" crossorigin src="./assets/index-d6ca37c52d57.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-D9ZoHTW-.css">
     <link id="kotonoha-ui-styles" rel="stylesheet" href="./game/userStyleSheet-c2-compat.css?v=c2-compat-7-crop-cache">
   <style id="release-ui-cleanup">#koto-sound-check{display:none!important}
 [class*="TextBox_Background"]{display:none!important}</style>
+    <link rel="stylesheet" href="./game/opening.css?v=local-intro-slower-fades-7">
 </head>
   <body>
     <!-- 背景模糊 -->
@@ -148,17 +149,12 @@
       <div id="ebgOverlay" class="html-body__effect-background-overlay"></div>
     </div>
     <!-- 落地页 -->
-    <div class="html-body__title-enter">
-      <div class="title-enter__initial-background"></div>
-      <div class="title-enter__white-background"></div>
-      <div class="title-enter__container">
-        <div class="title-enter-container__center-text">
-          <div>点击屏幕 · 进入故事</div>
-        </div>
-        <div class="title-enter-container__link-to-github">
-          <div>Powered by <a> WebGAL </a> Framework</div>
-        </div>
-      </div>
+    <div class="html-body__title-enter layered-statue-entry">
+      <img class="entry-background" src="./game/intro/ellie_statue_background.png" alt="" aria-hidden="true" width="1672" height="940">
+      <button id="koto-entry-statue" class="entry-statue-control" type="button" aria-label="点击进入游戏">
+        <span class="entry-statue-window"><img class="entry-statue-layer" src="./game/intro/ellie_statue_layer.png" alt="艾莉石像，闭眼合掌" width="1254" height="1254"></span>
+        <span class="entry-statue-caption">点击进入游戏</span>
+      </button>
     </div>
     <!-- 紧急回避页挂载点 -->
     <div id="html-body__panic-overlay"></div>
@@ -321,79 +317,30 @@
         };
       })();
     </script>
+    <script src="./game/opening.js?v=local-intro-slower-fades-7"></script>
     <!-- 首屏加载 -->
     <script>
       (() => {
-        const isIOS = window.__WEBGAL_DEVICE_INFO__?.isIOS ?? false;
-        const enterConfig = isIOS
-          ? { skipAnimation: true, hideDelay: 0 }
-          : { skipAnimation: false, hideDelay: 2000 };
         let enterPromiseResolve;
-        const enterPromise = new Promise((res) => {
-          enterPromiseResolve = res;
+        const enterPromise = new Promise(resolve => { enterPromiseResolve=resolve; });
+        const renderPromise = new Promise(resolve => {
+          window.renderPromiseResolve=()=>{resolve();delete window.renderPromiseResolve;};
         });
-        const renderPromise = new Promise((res) => {
-          window.renderPromiseResolve = () => {
-            res();
-            delete window.renderPromiseResolve;
-          };
+        Promise.all([enterPromise,renderPromise]).then(()=>{
+          document.querySelector('.title__enter-game-target')?.dispatchEvent(new MouseEvent('click',{view:window,bubbles:true,cancelable:true}));
         });
-        // 将播放bgm的事件发送出去
-        Promise.all([enterPromise, renderPromise]).then(() => {
-          const event = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true,
+        let entering=false;
+        const enter=async()=>{
+          if(entering)return;entering=true;
+          await window.kotoOpening.show(async()=>{
+            const landing=document.querySelector('.html-body__title-enter');
+            if(landing){landing.style.pointerEvents='none';landing.style.transition='none';landing.style.opacity='0';landing.style.display='none';}
+            enterPromiseResolve();await renderPromise;
           });
-          const target = document.querySelector('.title__enter-game-target');
-          if (target) {
-            target.dispatchEvent(event);
-          }
-        });
-        /** 点击屏幕，进入引擎主界面 */
-        const enter = () => {
-          const titleEnter = document.querySelector('.html-body__title-enter');
-          if (enterConfig.skipAnimation) {
-            if (titleEnter) {
-              titleEnter.style.pointerEvents = 'none';
-              titleEnter.style.transition = 'none';
-              titleEnter.style.opacity = '0';
-              titleEnter.style.display = 'none';
-            }
-            enterPromiseResolve();
-            return;
-          }
-          const initialBackground = document.querySelector('.title-enter__initial-background');
-          if (initialBackground) {
-            initialBackground.style.opacity = '0';
-          }
-          const container = document.querySelector('.title-enter__container');
-          if (container) {
-            container.style.opacity = '0';
-          }
-          const whiteBackground = document.querySelector('.title-enter__white-background');
-          setTimeout(() => {
-            if (whiteBackground) {
-              whiteBackground.style.opacity = '1';
-            }
-          }, 50); // 在50ms后开始显示白色渐变
-          setTimeout(() => {
-            if (titleEnter) titleEnter.style.opacity = '0';
-          }, 500); // 500ms后开始降低落地页透明度
-          if (!isIOS && titleEnter) {
-            titleEnter.style.pointerEvents = 'none'; // 落地页不再响应点击
-            titleEnter.style.background = 'linear-gradient( #a1c4fd 0%, #c2e9fb 100%)'; // 改变标题渐变效果
-          }
-          setTimeout(() => {
-            if (titleEnter) {
-              titleEnter.style.display = 'none';
-            }
-          }, enterConfig.hideDelay); // 将落地页设置为不显示
-          enterPromiseResolve();
         };
         const titleEnter = document.querySelector('.html-body__title-enter');
         if (titleEnter) {
-          titleEnter.onclick = enter;
+          document.getElementById('koto-entry-statue').addEventListener('click', event => { event.preventDefault();event.stopPropagation();enter(); });
         }
         const linkToGithub = document.querySelector('.title-enter-container__link-to-github');
         const aTag = linkToGithub?.querySelector('a');

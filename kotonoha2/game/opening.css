@@ -1,0 +1,28 @@
+#koto-opening{position:fixed;inset:0;z-index:2147483600;box-sizing:border-box;background:#000;color:#f3f3f3;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(22px,4vw,54px);font-family:system-ui,-apple-system,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;isolation:isolate;opacity:1;transition:opacity 540ms ease}
+#koto-opening.is-revealing{opacity:0}
+#koto-opening .opening-loading{font-size:15px;color:#aaa;text-align:center}
+#koto-opening .opening-page{width:100%;max-width:980px;min-height:0;display:flex;flex-direction:column;align-items:center;opacity:1;transition:opacity 480ms ease}
+#koto-opening .opening-page.is-changing{opacity:0}
+#koto-opening .opening-brand{justify-content:center;flex:1;gap:clamp(28px,5vh,60px)}
+#koto-opening .opening-brand h1{font-size:clamp(23px,3vw,38px);font-weight:400;letter-spacing:.12em;margin:0;text-align:center}
+#koto-opening .opening-logo{display:block;width:min(86vw,900px);max-width:100%;height:auto;max-height:46vh;object-fit:contain}
+#koto-opening .opening-rights{flex:1;justify-content:center;align-items:stretch;max-width:940px}
+#koto-opening .opening-rights h1{font-size:clamp(22px,2.4vw,30px);font-weight:500;letter-spacing:.12em;margin:0 0 22px;text-align:center}
+#koto-opening .opening-copy{overflow:auto;overscroll-behavior:contain;min-height:0;font-size:clamp(15px,1.45vw,19px);line-height:1.8;scrollbar-width:thin;scrollbar-color:#666 #111;padding:0 8px 0 0}
+#koto-opening .opening-copy p{margin:0 0 1.05em}
+#koto-opening .opening-copy p:last-child{margin-bottom:0}
+#koto-opening .opening-links{display:grid;grid-template-columns:max-content 1fr;gap:3px 12px;align-items:baseline;margin:1.05em 0}
+#koto-opening a{color:#bed8ff;text-underline-offset:4px;overflow-wrap:anywhere}
+@media(max-width:600px){#koto-opening{padding:26px 22px max(24px,env(safe-area-inset-bottom));height:100dvh}#koto-opening .opening-rights{justify-content:center}#koto-opening .opening-rights h1{margin:4px 0 20px}#koto-opening .opening-copy{font-size:15px;line-height:1.75}#koto-opening .opening-links{grid-template-columns:1fr;gap:3px}#koto-opening .opening-links a{margin-bottom:9px}#koto-opening .opening-logo{width:100%;max-height:40vh}}
+@media(max-height:520px){#koto-opening{padding:18px 32px}#koto-opening .opening-rights h1{margin-bottom:12px;font-size:22px}#koto-opening .opening-copy{font-size:14px;line-height:1.65}#koto-opening .opening-brand{gap:18px}#koto-opening .opening-logo{max-height:38vh}}
+@media(prefers-reduced-motion:reduce){#koto-opening,#koto-opening .opening-page{transition:none}}
+.html-body__title-enter.layered-statue-entry{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;transform:none!important;background:#050708!important;display:block;padding:0;box-sizing:border-box;isolation:isolate;overflow:hidden}
+.layered-statue-entry .entry-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.entry-statue-control{position:absolute;z-index:1;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:max-content;padding:8px 12px;border:0;background:transparent;color:#fff;cursor:pointer;touch-action:manipulation;font:inherit;min-width:160px;min-height:48px}
+.entry-statue-window{position:relative;display:block;flex:none;width:min(calc(86dvh * .650282),84vw);aspect-ratio:807/1241;overflow:hidden;pointer-events:none}
+.entry-statue-layer{position:absolute;left:-27.757125%;top:-.322321%;display:block;width:155.390335%;height:auto;max-width:none;pointer-events:none}
+.entry-statue-caption{display:block;flex:none;margin-top:8px;padding:12px 26px;min-height:48px;box-sizing:border-box;font-size:clamp(18px,2.1vw,26px);line-height:1.35;letter-spacing:.12em;white-space:nowrap;text-shadow:0 2px 6px #000,0 0 14px #000;pointer-events:none}
+.entry-statue-control:focus-visible{outline:2px solid #d8e7ff;outline-offset:3px;border-radius:4px}
+.entry-statue-control:hover .entry-statue-caption{color:#f5e4b7}
+@media(max-width:600px){.entry-statue-window{width:min(calc(86dvh * .650282),92vw)}.entry-statue-control{padding:4px 6px;bottom:max(16px,env(safe-area-inset-bottom))}.entry-statue-caption{font-size:19px;margin-top:6px}}
+
