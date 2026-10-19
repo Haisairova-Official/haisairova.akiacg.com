@@ -58,3 +58,9 @@ body{position:fixed;inset:0;}
 #textBoxMain[data-koto-read="true"] [data-koto-glyph]{color:#B8DDFF!important;-webkit-text-fill-color:#B8DDFF!important;}
 #textBoxMain [data-koto-stroke]{visibility:hidden!important;}
 #textBoxMain [class*="showName"],#textBoxMain [class*="nameContainer"]{font-size:42px!important;line-height:1.25!important;}
+
+/* A touch tap must not leave the desktop hover-only quick-save preview over subtitles. */
+@media (hover: none), (pointer: coarse) {
+  [class*="_fastSlPreview_"] { display: none !important; }
+}
+[class*="_fastSlPreview_"] { pointer-events: none; }

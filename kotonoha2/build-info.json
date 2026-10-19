@@ -1,26 +1,22 @@
 {
-  "version": "chapter2-local-20261018-v12-monster-behind-cast",
-  "base_commit": "ecdda75cf76c6ca9bed11b720131828bbcc8f092",
-  "chapters": [
-    "2-1",
-    "2-2",
-    "2-3",
-    "2-4",
-    "2-5",
-    "2-6"
+  "release": "kotonoha-chapters-1-3",
+  "accepted_runtime": "9b91be6897af",
+  "public_runtime": "88949152eaf5",
+  "base_commit": "3a8b17d025c38add4df8cce53150747ceda4f289",
+  "languages": [
+    "zh",
+    "ja"
   ],
-  "paragraphs": 1819,
-  "original_chapter1_routes_preserved": true,
-  "ed_sequence": "2-5 -> ED -> 2-6",
-  "published": false,
-  "validation": "pending browser regression",
-  "active_bundle": "index-c4b887113039.js",
-  "first_chapter_ed": "Native MP4 reconstructed with complete size and SHA256 validation",
-  "ellie_shared": "ellie_shared.png",
-  "all_role_audit": "26 scripts / 22 sprite role IDs / 5 cross-chapter shared roles",
-  "first_chapter_ed_validation": "LAN playing, skip and actual natural completion271.069s passed",
-  "negative_cache_recovery": "Cached non-2xx response re-fetched with cache reload, still blocks on actual failure",
-  "firewall_source_library_id": "libfile_df6f8f6a07b48191abdeedabe66bae07",
-  "visual_regression": "Actual Chapter2-5 stage verified; anchor/CG-state/preload audits pass",
-  "corridor": "Original A1 sign retained by explicit user instruction"
+  "chapter3_sections": 6,
+  "chapter3_paragraphs_per_language": 2171,
+  "chapter3_pages": {
+    "zh": 2305,
+    "ja": 2355
+  },
+  "bgm": "game/bgm/D.wav",
+  "chapter3_op": "game/video/c3_op.mp4",
+  "chapter3_ed": null,
+  "prebath_art_revision": 2,
+  "legacy_save_migration": true,
+  "development_metadata_in_public_runtime": false
 }

@@ -1,0 +1,12 @@
+{
+  "file": "c2_plate_break_1643.mp3",
+  "title": "Broken Plate #1",
+  "author": "Joseph SARDIN",
+  "source_url": "https://bigsoundbank.com/broken-plate-1-s1643.html",
+  "download_url": "https://bigsoundbank.com/UPLOAD/bwf-en/1643.wav",
+  "license": "CC0",
+  "source_duration_seconds": 1.738771,
+  "source_sha256": "9d80fa342793c9eaaca048aaa3365c59f1794c110b86f3766cbee80ab068dcbe",
+  "edits": "loudnorm -20 LUFS, -2 dBTP; MP3 192k; one-shot",
+  "usage": "Chapter2-1 l_24; source describes plate dropping on concrete; game does not assert floor material"
+}

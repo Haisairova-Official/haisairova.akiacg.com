@@ -37,7 +37,7 @@
  const update=()=>{
   const title=document.querySelector('[class*="_Title_main_"]')||[...document.querySelectorAll('span')].find(x=>x.textContent==='开始游戏')?.parentElement?.parentElement?.parentElement?.parentElement;
   if(title&&!title.querySelector('#koto-chapter-entry')){const b=button('章节选择',e=>{e.stopPropagation();document.dispatchEvent(new Event('koto-open-chapters'));});b.id='koto-chapter-entry';title.append(b);}
-  choices=[...root.querySelectorAll('div')].filter(x=>x.childElementCount===0&&(/^(第一章|第二章|第[1-7]节|返回语言与动效|返回大章节|返回主菜单)$/.test(x.textContent.trim())||Object.values(variants).includes(x.textContent.trim())));
+  choices=[...root.querySelectorAll('div')].filter(x=>x.childElementCount===0&&(/^(第一章|第二章|第三章|第[1-7]节|返回语言与动效|返回大章节|返回主菜单)$/.test(x.textContent.trim())||Object.values(variants).includes(x.textContent.trim())));
   const labels=choices.map(x=>x.textContent.trim());const level=labels.length===5&&Object.values(variants).every(x=>labels.includes(x))?1:labels.includes('返回语言与动效')?2:labels.includes('返回大章节')?3:0;
   if(!level){page.hidden=true;signature='';return;}
   const key=level+'|'+labels.join('|');if(signature===key)return;signature=key;render(level);
