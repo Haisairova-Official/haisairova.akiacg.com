@@ -1,0 +1,18 @@
+/* All voice UI is inside #root and inherits the game's scale and rotation. */
+#root #koto-voice-controls{position:absolute;top:28px;left:50%;right:auto;transform:translateX(-50%) scale(var(--koto-voice-ui-scale,1));transform-origin:top center;z-index:22000;box-sizing:border-box;width:var(--koto-voice-ui-width,380px);max-height:var(--koto-voice-ui-height,500px);overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;color:#f4efdd;background:#182127ed;border:1px solid #b5a982;border-radius:10px;padding:7px 10px;font:15px/1.4 system-ui,sans-serif;box-shadow:0 3px 12px #0005}
+#root #koto-voice-controls[hidden]{display:none}
+#koto-voice-controls button,.koto-stage-card button{min-height:44px;border:0;border-radius:6px;background:#bdad7f;color:#172026;padding:8px 10px;font:600 15px/1.4 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#koto-voice-controls button[aria-checked=false]{background:#465057;color:#fff}
+#koto-voice-controls button:focus-visible,#koto-voice-controls summary:focus-visible,.koto-stage-card button:focus-visible,.koto-stage-card input:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#koto-voice-controls details{grid-column:1/-1}
+#koto-voice-controls summary{min-height:26px;cursor:pointer;font-size:13px}
+#koto-voice-controls p{margin:6px 0;font-size:13px}
+#koto-voice-controls label{display:block;font-size:13px}
+#koto-voice-controls input{width:100%;min-height:36px;accent-color:#bdad7f}
+/* Reposition the existing engine control, including its original click handler. */
+#root #koto-voice-controls #koto-sound-check{display:block!important;position:static!important;inset:auto!important;z-index:auto!important;max-width:100%;min-height:44px;font:600 13px/1.4 system-ui,sans-serif!important;padding:8px 10px!important;white-space:normal}
+#root .koto-stage-modal{position:absolute;inset:0;z-index:2147483647;background:#10131bf5;color:#fff;box-sizing:border-box;overflow:hidden}
+#root .koto-stage-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(var(--koto-voice-ui-scale,1));transform-origin:center;width:var(--koto-voice-ui-width,680px);max-height:var(--koto-voice-ui-height,600px);overflow:auto;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:12px;text-align:center;font:16px/1.45 system-ui,sans-serif}
+.koto-stage-card h2{font-size:22px;line-height:1.3;margin:0 0 12px}.koto-stage-card p{margin:8px 0}.koto-stage-card progress{width:100%}
+.koto-preload-choice{display:flex;gap:10px;align-items:center;justify-content:center;min-height:44px;font-weight:600}.koto-preload-choice input{width:22px;height:22px;accent-color:#bdad7f}
+.koto-preload-choice-panel{display:flex;flex-direction:column;gap:10px}.koto-stage-card [hidden]{display:none!important}
