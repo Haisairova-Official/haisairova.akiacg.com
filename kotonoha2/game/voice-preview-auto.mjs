@@ -8,12 +8,12 @@ export function createVoiceAutoGate(engine, cancelVoice, {name='koto-preview-voi
     registered=active;
     if(!active){controller.unmountPerform(name,true);return;}
     controller.arrangeNewPerform({performName:name,duration:600000,isHoldOn:false,skipNextCollect:true,
-      startFunction:()=>{},stopFunction:()=>{registered=false;cancelVoice();},
+      startFunction:()=>{},stopFunction:()=>{registered=false;},
       blockingNext:()=>false,blockingAuto:()=>registered&&!engine.gameplay.skipAnimation,
       goNextWhenOver:false}, {command:0,commandRaw:'',content:'',args:[],sentenceAssets:[],subScene:[],inlineComment:'',isLineBreakHolder:false}, false);
   }
-  const userNext=()=>cancelVoice();
-  engine.events?.userInteractNext?.on(userNext);
-  function dispose(){setActive(false);disposing=true;engine.events?.userInteractNext?.off(userNext);}
+  // The first user-next may only complete the typewriter. Context changes and
+  // actual skip/menu lifecycle updates, rather than raw clicks, stop the voice.
+  function dispose(){setActive(false);disposing=true;}
   return {setActive,dispose,supported};
 }

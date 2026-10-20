@@ -16,3 +16,8 @@
 .koto-stage-card h2{font-size:22px;line-height:1.3;margin:0 0 12px}.koto-stage-card p{margin:8px 0}.koto-stage-card progress{width:100%}
 .koto-preload-choice{display:flex;gap:10px;align-items:center;justify-content:center;min-height:44px;font-weight:600}.koto-preload-choice input{width:22px;height:22px;accent-color:#bdad7f}
 .koto-preload-choice-panel{display:flex;flex-direction:column;gap:10px}.koto-stage-card [hidden]{display:none!important}
+
+/* Reuse the native controls, with one readable font scale across their labels. */
+#root [class*="_singleButton_rdjpk_"],#root [class*="_singleButton_yghix_"]{font-size:calc(14px * var(--koto-native-ui-scale,1))!important;line-height:1.35}
+#root [class*="_singleButton_rdjpk_"] svg{width:1.2em;height:1.2em}
+@media(max-width:900px){#root [class*="_singleButton_rdjpk_"]{font-size:calc(12px * var(--koto-native-ui-scale,1))!important}}

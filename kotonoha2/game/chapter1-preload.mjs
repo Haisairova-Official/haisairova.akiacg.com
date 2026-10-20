@@ -1,7 +1,7 @@
 // Chapter 1 extends the existing loader's screen, queue, retries and cancellation.
 import {createVoicePreloadSession} from './chapter1-preload-core.mjs';
-import {VOICE_ENABLED_KEY} from './chapter1-voice-core.mjs';
-import {mountStageControl} from './chapter1-voice-ui.mjs';
+import {VOICE_ENABLED_KEY} from './chapter1-voice-core.mjs?v=7aa7ac9230b2';
+import {mountStageControl} from './chapter1-voice-ui.mjs?v=7aa7ac9230b2';
 const sections={
  '1-1':{clips:79,bytes:12533406},'1-2':{clips:126,bytes:23517892},
  '1-3':{clips:188,bytes:39276126},'1-4':{clips:147,bytes:24175446},

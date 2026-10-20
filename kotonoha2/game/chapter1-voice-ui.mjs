@@ -18,6 +18,7 @@ export function mountStageControl(element,{modal=false,document=globalThis.docum
     element.style.setProperty('--koto-voice-ui-scale',String(layout.scale));
     element.style.setProperty('--koto-voice-ui-width',layout.width+'px');
     element.style.setProperty('--koto-voice-ui-height',layout.maxHeight+'px');
+    if(root.style.getPropertyValue('--koto-native-ui-scale')!==String(layout.scale))root.style.setProperty('--koto-native-ui-scale',String(layout.scale));
   };
   const observer=typeof MutationObserver==='function'?new MutationObserver(update):null;
   observer?.observe(root,{attributes:true,attributeFilter:['style']});

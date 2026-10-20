@@ -43,7 +43,7 @@ export function createChapterVoiceController({baseURL,storage,fetcher=fetch,make
   const read=(key,fallback)=>{try{return storage?.getItem(key)??fallback;}catch{return fallback;}};
   let enabled=read(VOICE_ENABLED_KEY,'on')!=='off';
   let volume=clamp(read(VOICE_VOLUME_KEY,'.8'));
-  let manifest=null,player=null,request=null,context=null,lastKey='',serial=0,disposed=false,status='idle';
+  let manifest=null,player=null,request=null,context=null,lastKey='',attemptedKey='',serial=0,disposed=false,status='idle';
   const write=(key,value)=>{try{storage?.setItem(key,value);}catch{/* Private browsing must not break playback. */}};
   const snapshot=()=>({enabled,volume,status,manifestLoaded:!!manifest,playing:!!player?.stats().playing});
   const notify=next=>{status=next;onChange(snapshot());};
@@ -94,15 +94,26 @@ export function createChapterVoiceController({baseURL,storage,fetcher=fetch,make
     const newlyBlocked=next.blocked&&!context?.blocked;
     context=next;
     if(changed||newlyBlocked){interrupt();lastKey=key;}
-    if(changed&&eligible())void playCurrent();
+    // A blocked new cue still gets its first attempt after the lock/menu clears.
+    // A cue already interrupted by a menu must not restart without an explicit replay.
+    if(eligible()&&attemptedKey!==key){attemptedKey=key;void playCurrent();}
   }
+  function prepareReplay() {
+    if(!context||!context.isDialogue||!formalScene.test(context.scene))return null;
+    const key=lastKey,allowed=enabled&&!disposed;
+    return {run(){
+      if(!allowed||lastKey!==key||!eligible())return false;
+      interrupt();attemptedKey=key;void playCurrent();return true;
+    }};
+  }
+  function replayCurrent(){const replay=prepareReplay();if(!replay)return false;replay.run();return true;}
   function setEnabled(value,{persist=true}={}) {
     const next=!!value;
     if(persist)write(VOICE_ENABLED_KEY,next?'on':'off');
     if(next===enabled)return;
     enabled=next;interrupt();
     if(!enabled){player?.dispose();player=null;}
-    else void playCurrent();
+    else if(eligible()){attemptedKey=lastKey;void playCurrent();}
   }
   function setVolume(value,{persist=true}={}) {
     volume=clamp(value);if(persist)write(VOICE_VOLUME_KEY,String(volume));
@@ -110,5 +121,5 @@ export function createChapterVoiceController({baseURL,storage,fetcher=fetch,make
   }
   function dispose(){disposed=true;interrupt();player?.dispose();player=null;}
   notify(enabled?'idle':'disabled');
-  return {update,setEnabled,setVolume,interrupt,dispose,snapshot};
+  return {update,setEnabled,setVolume,interrupt,dispose,snapshot,prepareReplay,replayCurrent};
 }

@@ -161,7 +161,8 @@ test('formal auto gate holds only current queue, allows skip, and releases on OF
  assert.equal(perform.blockingAuto(),true);assert.equal(perform.blockingNext(),false);
  audios[0].onended();await waitFor(()=>audios.length===2);assert.equal(perform.blockingAuto(),true);audios[1].onended();await delay();assert.equal(perform,null);
  controller.update(ctx());await delay();gateEngine.gameplay.skipAnimation=true;assert.equal(perform.blockingAuto(),false);gateEngine.gameplay.skipAnimation=false;
- next();assert.equal(perform,null);
+ assert.equal(next,undefined);assert.ok(perform);
+ controller.update(ctx({line:11,text:'b',dialogKey:'actual-next'}));await waitFor(()=>audios.length===4);
  controller.setEnabled(false);controller.setEnabled(true);await delay();assert.ok(perform);controller.setEnabled(false);assert.equal(perform,null);
  gate.dispose();controller.dispose();
 });
@@ -209,16 +210,16 @@ test('source label lookup fails closed at unknown labels and uses source lines, 
  assert.equal(sourceParagraphId([...list,{commandRaw:'label',content:'different-label'},{commandRaw:'少女'}],3),'');
  assert.equal(sourceParagraphId([{commandRaw:'少女'}],0),'');
 });
-test('runtime uses source label context and hides controls during chapter/settings/backlog menus',()=>{
+test('runtime shows voice controls only in title/settings, hides story and other overlays',()=>{
  const runtime=readFileSync(new URL('../game/chapter1-voice-runtime.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- const elements=[],updates=[];let subscriber,modal=false;
+ const elements=[],updates=[];let subscriber,modal=false,title=false,menu=false,settings=false;
  const element=tag=>{const value={tag,hidden:false,open:false,children:[],style:{},
   append(...children){this.children.push(...children);for(const child of children)child.parentElement=this;},insertBefore(child){this.children.push(child);child.parentElement=this;},setAttribute(){},addEventListener(){},removeEventListener(){},
   contains(target){return target===this;},remove(){}};elements.push(value);return value;};
  const root=element('root'),sound=element('button');sound.id='koto-sound-check';
- const document={baseURI:'https://game.test/',hidden:false,body:element('body'),getElementById:id=>id==='root'?root:id==='koto-sound-check'?sound:null,
+ const document={baseURI:'https://game.test/',hidden:false,body:element('body'),getElementById:id=>id==='root'?root:id==='koto-sound-check'?sound:id==='koto-chapter-entry'&&title?{}:null,
   createElement:element,addEventListener(){},removeEventListener(){},
-  querySelector(selector){return selector.includes('#koto-chapters')&&modal?{}:null;}};
+  querySelector(selector){if(selector.includes('#koto-chapters'))return modal?{}:null;if(selector.includes('_Options_main_'))return settings?{}:null;if(selector.includes('_Menu_main_'))return menu?{}:null;return null;}};
  const engine={sceneManager:{lockSceneWrite:false,sceneData:{currentSentenceId:2,currentScene:{
   sceneUrl:'game/scene/chapter1-1-ja-r11-owl.txt',
   sentenceList:[{commandRaw:'label',content:'KOTO-C1-1-l_20'},{commandRaw:'少女',startLine:116}]}}},
@@ -229,10 +230,14 @@ test('runtime uses source label context and hides controls during chapter/settin
   createVoiceAutoGate:()=>({setActive(){},dispose(){}}),
   createChapterVoiceController:()=>({update:value=>updates.push(value),snapshot:()=>({enabled:true}),interrupt(){},dispose(){}})});
  const panel=elements.find(e=>e.id==='koto-voice-controls'),details=elements.find(e=>e.tag==='details');
- assert.equal(updates[0].paragraphId,'KOTO-C1-1-l_20');assert.equal(panel.hidden,false);assert.equal(panel.parentElement,root);assert.equal(sound.parentElement,panel);
+ assert.equal(updates[0].paragraphId,'KOTO-C1-1-l_20');assert.equal(panel.hidden,true);assert.equal(panel.parentElement,root);assert.equal(sound.parentElement,panel);
  details.open=true;modal=true;subscriber(engine.stageManager.getViewStageState());
  assert.equal(panel.hidden,true);assert.equal(details.open,false);assert.equal(updates.at(-1).blocked,true);
- modal=false;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,false);
+ modal=false;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,true);
+ title=true;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,false);
+ menu=true;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,true);
+ settings=true;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,false);
+ settings=false;menu=false;title=false;subscriber(engine.stageManager.getViewStageState());assert.equal(panel.hidden,true);
  const css=readFileSync(new URL('../game/chapter1-voice.css',import.meta.url),'utf8');
  assert.match(css,/#root #koto-voice-controls\{position:absolute;top:28px;left:50%;right:auto/);
  assert.match(css,/#koto-voice-controls\[hidden\]\{display:none\}/);
@@ -245,4 +250,57 @@ test('voice toolbar and preload card stay inside transformed game coordinates, n
   assert.ok(box.width>0&&box.maxHeight>0);
  }
  assert.equal(stageControlLayout({scale:NaN}).scale,1);
+});
+
+
+test('new cue first encountered blocked starts once after unblocking',async()=>{
+ const h=setup();h.controller.update(ctx({blocked:true}));await delay();assert.equal(h.requests.length,0);
+ h.controller.update(ctx());await waitFor(()=>h.audios.length===1);h.controller.update(ctx());await delay();assert.equal(h.audios.length,1);
+});
+test('subsequent new blocked cue is not consumed, while already-played menu interruption stays stopped',async()=>{
+ const h=setup();h.controller.update(ctx());await waitFor(()=>h.audios.length===1);
+ h.controller.update(ctx({line:11,text:'b',dialogKey:'two',blocked:true}));await delay();assert.equal(h.audios.length,1);
+ h.controller.update(ctx({line:11,text:'b',dialogKey:'two'}));await waitFor(()=>h.audios.length===2);
+ h.controller.update(ctx({line:11,text:'b',dialogKey:'two',blocked:true}));h.controller.update(ctx({line:11,text:'b',dialogKey:'two'}));await delay();assert.equal(h.audios.length,2);
+});
+test('same cue typewriter update does not stop or duplicate active speech',async()=>{
+ const h=setup();h.controller.update(ctx());await waitFor(()=>h.audios.length===1);h.controller.update(ctx());
+ assert.equal(h.audios[0].paused,false);assert.equal(h.controller.snapshot().playing,true);assert.equal(h.audioRequests().length,1);
+});
+test('explicit replay restarts current cue using cached audio without altering OFF preference',async()=>{
+ const h=setup();h.controller.update(ctx());await waitFor(()=>h.audios.length===1);assert.equal(h.controller.replayCurrent(),true);await waitFor(()=>h.audios.length===2);
+ assert.equal(h.audios[0].paused,true);assert.equal(h.audioRequests().length,1);assert.equal(h.audios[1].paused,false);
+ h.controller.setEnabled(false);const count=h.requests.length;assert.equal(h.controller.replayCurrent(),true);await delay();assert.equal(h.requests.length,count);assert.equal(h.controller.snapshot().enabled,false);
+});
+test('deferred replay is bound to exact cue and cannot play after a scene switch',async()=>{
+ const h=setup();h.controller.update(ctx({blocked:true}));const replay=h.controller.prepareReplay();
+ h.controller.update(ctx({line:11,text:'b',dialogKey:'two',blocked:true}));assert.equal(replay.run(),false);await delay();assert.equal(h.requests.length,0);
+});
+test('deferred mobile replay may run after its same-cue menu closes without double playback',async()=>{
+ const h=setup();h.controller.update(ctx());await waitFor(()=>h.audios.length===1);h.controller.update(ctx({blocked:true}));
+ const replay=h.controller.prepareReplay();h.controller.update(ctx());assert.equal(h.audios.length,1);assert.equal(replay.run(),true);await waitFor(()=>h.audios.length===2);assert.equal(h.audios[1].paused,false);
+});
+test('replay requested while OFF cannot wake up later after another action enables voice',async()=>{
+ const h=setup({saved:{[VOICE_ENABLED_KEY]:'off'}});h.controller.update(ctx());const replay=h.controller.prepareReplay();h.controller.setEnabled(true);await waitFor(()=>h.audios.length===1);
+ assert.equal(replay.run(),false);await delay();assert.equal(h.audios.length,1);
+});
+test('narration and other chapters leave native replay behavior available and never replay previous cue',async()=>{
+ const h=setup();h.controller.update(ctx());await waitFor(()=>h.audios.length===1);
+ for(const context of [ctx({isDialogue:false,text:'narration'}),ctx({scene:'chapter2-1-ja-c2-owl.txt'})]){h.controller.update(context);assert.equal(h.controller.prepareReplay(),null);assert.equal(h.controller.replayCurrent(),false);}
+ assert.equal(h.audios.length,1);
+});
+
+function originalReplayHandler(mobile){
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');const path=html.match(/\.\/assets\/index-[a-f0-9]+\.js/)[0];const source=readFileSync(new URL('../'+path,import.meta.url),'utf8');
+ const marker=mobile?'onClick:()=>{const handled=window.kotonohaChapterVoice?.replayCurrent?.({defer:!0});':'onClick:()=>{if(window.kotonohaChapterVoice?.replayCurrent?.())';
+ const start=source.indexOf(marker);assert.ok(start>=0,'native handler must explicitly call replay API');
+ const end=source.indexOf(mobile?'},children:':'},onMouseEnter:n',start);assert.ok(end>start);
+ return source.slice(start+'onClick:'.length,end+1);
+}
+for(const mobile of [false,true])test(`original ${mobile?'mobile':'desktop'} replay handler delegates once and retains native fallback`,()=>{
+ const code=originalReplayHandler(mobile);
+ for(const handled of [true,false]){let formal=0,native=0,closed=0,clickSound=0,options;const audio={currentTime:3,pause(){},play(){native++;return Promise.resolve();}};
+  const fn=runInNewContext('('+code+')',{window:{kotonohaChapterVoice:{replayCurrent(value){formal++;options=value;return handled;}}},document:{getElementById:id=>id==='currentVocal'?audio:null},e:{value:true,set(){closed++;}},i(){clickSound++;}});fn();
+  assert.equal(formal,1);assert.equal(native,handled?0:1);if(mobile){assert.equal(options.defer,true);assert.equal(closed,1);}else assert.equal(clickSound,1);
+ }
 });

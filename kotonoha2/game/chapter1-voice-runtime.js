@@ -1,8 +1,8 @@
-import {W as engine} from '../assets/index-7fd3a993af70.js';
-import {createChapterVoiceController,chapterVoiceContext,VOICE_ENABLED_KEY,VOICE_VOLUME_KEY} from './chapter1-voice-core.mjs';
-import {createVoiceAutoGate} from './voice-preview-auto.mjs';
-import {mountStageControl} from './chapter1-voice-ui.mjs';
-import {cancelVoicePreload} from './chapter1-preload.mjs';
+import {W as engine} from '../assets/index-7aa7ac9230b2.js';
+import {createChapterVoiceController,chapterVoiceContext,VOICE_ENABLED_KEY,VOICE_VOLUME_KEY} from './chapter1-voice-core.mjs?v=7aa7ac9230b2';
+import {createVoiceAutoGate} from './voice-preview-auto.mjs?v=7aa7ac9230b2';
+import {mountStageControl} from './chapter1-voice-ui.mjs?v=7aa7ac9230b2';
+import {cancelVoicePreload} from './chapter1-preload.mjs?v=7aa7ac9230b2';
 
 // Development previews keep their existing isolated controls. Formal scripts stay byte-identical.
 if(!/\/preview-[^/]+\.html$/.test(location.pathname)) {
@@ -40,15 +40,17 @@ if(!/\/preview-[^/]+\.html$/.test(location.pathname)) {
   toggle.addEventListener('click',()=>{const next=!voice.snapshot().enabled;voice.setEnabled(next);if(!next)cancelVoicePreload();});
   volume.addEventListener('input',()=>voice.setVolume(volume.value));
   let focused=true;
-  const menuOpen=()=>!!document.querySelector('[data-koto-preload], #koto-chapters:not([hidden]), [class*="_Menu_main_"], [class*="_Backlog_main_"]:not([class*="_Backlog_main_out_"])');
+  const panelModalOpen=()=>!!document.querySelector('[data-koto-preload], #koto-chapters:not([hidden]), [class*="_Backlog_main_"]:not([class*="_Backlog_main_out_"])');
+  const menuOpen=()=>panelModalOpen()||!!document.querySelector('[class*="_Menu_main_"]');
+  const settingsOpen=()=>!!document.querySelector('[class*="_Menu_main_"] [class*="_Options_main_"]');
   const blocked=()=>!focused||document.hidden||engine.gameplay.skipAnimation||engine.sceneManager.lockSceneWrite||
     menuOpen()||!!document.querySelector('#playVideoElement, #koto-chapter-entry');
   let latest=engine.stageManager.getViewStageState();
   const update=state=>{
     latest=state;
     stageMount.update();syncSoundCheck();
-    // Do not cover chapter selection, backlog, or the engine's own settings.
-    panel.hidden=menuOpen();
+    // Voice controls belong to the title/settings lifecycle, never the story.
+    panel.hidden=panelModalOpen()||!(settingsOpen()||(!menuOpen()&&document.getElementById('koto-chapter-entry')));
     if(panel.hidden)details.open=false;
     voice.update(chapterVoiceContext(engine.sceneManager.sceneData,state,{baseURL:document.baseURI,blocked:blocked()}));
   };
@@ -78,7 +80,15 @@ if(!/\/preview-[^/]+\.html$/.test(location.pathname)) {
   window.addEventListener('blur',blur);window.addEventListener('focus',focus);
   update(latest);
   // Read-only diagnostics for release QA, with explicit lifecycle cleanup.
-  window.kotonohaChapterVoice={inspect:voice.snapshot,dispose(){
+  window.kotonohaChapterVoice={inspect:voice.snapshot,replayCurrent({defer=false}={}){
+    update(latest);
+    const replay=voice.prepareReplay();if(!replay)return false;
+    // The mobile native control closes its own menu before the next frame.
+    // The captured request cannot replay a different cue after a scene change.
+    if(defer)window.requestAnimationFrame(()=>{update(latest);replay.run();});
+    else replay.run();
+    return true;
+  },dispose(){
     unsubscribe();observer.disconnect();stageMount.dispose();gate.dispose();voice.dispose();
     if(borrowedSound&&soundParent)soundParent.append(borrowedSound);panel.remove();
     document.removeEventListener('koto-voice-choice',choice);
